@@ -1,0 +1,25 @@
+# Simplified TransMIL (Person 3) -- reference hyperparameters.
+# d_model must be divisible by n_heads.
+
+model:
+  in_dim: 1024
+  d_model: 384
+  n_heads: 6
+  n_layers: 2
+  ffn_multiplier: 4
+  n_classes: 6
+  dropout: 0.1
+
+data:
+  in_dim: 1024
+
+training:
+  max_epochs: 50
+  patience: 12
+  batch_size: 4       # transformer over ~1000 tokens: tiny batch to fit GPU RAM
+  lr: 1.0e-4
+  weight_decay: 1.0e-5
+  max_patches: 2048
+  class_weights: balanced
+  grad_clip: 1.0
+  device: auto
