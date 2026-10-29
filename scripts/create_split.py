@@ -70,7 +70,7 @@ def read_panda_csv(path: str | Path) -> List[Dict[str, Any]]:
 
 
 def stratified_split(
-    rows: Sequence[Dict[str, Any]], seed: int = 42
+    rows: Sequence[Dict[str, Any]], seed: int = 42, use_all: bool = False
 ) -> List[Dict[str, Any]]:
     """50/10/10 per ISUP grade, seeded, with a distribution report."""
     rng = np.random.default_rng(seed)
@@ -91,8 +91,9 @@ def stratified_split(
         n_train = min(TARGET_TRAIN_PER_CLASS, int(round(n * 0.72)))
         n_val = min(TARGET_VAL_PER_CLASS, max(0, (n - n_train) // 2))
         n_test = min(TARGET_TEST_PER_CLASS, max(0, n - n_train - n_val))
-        # Give any leftovers to train so the model sees as much data as possible.
-        n_train = n - n_val - n_test
+        if use_all:
+            # Give any leftovers to train so the model sees as much data as possible.
+            n_train = n - n_val - n_test
 
         for i, row in enumerate(bucket):
             if i < n_train:
@@ -101,7 +102,7 @@ def stratified_split(
                 split = "val"
             elif i < n_train + n_val + n_test:
                 split = "test"
-            else:  # pragma: no cover - defensive
+            else:
                 continue
             output.append({**row, "split": split})
 
@@ -136,10 +137,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--panda-csv", default="data/raw/train.csv")
     parser.add_argument("--out", default="data/common_split.csv")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--use-all", action="store_true", help="Use all slides instead of 300/60/60 target")
     args = parser.parse_args(argv)
 
     rows = read_panda_csv(args.panda_csv)
-    split_rows, shortfalls = stratified_split(rows, seed=args.seed)
+    split_rows, shortfalls = stratified_split(rows, seed=args.seed, use_all=args.use_all)
     summary = write_split(split_rows, args.out)
 
     print(f"Wrote {len(split_rows)} slides -> {args.out}")
