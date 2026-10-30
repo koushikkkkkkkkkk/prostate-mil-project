@@ -336,10 +336,13 @@ def infer_feature_dim(
             return int(features.size(1))
         except Exception as exc:  # pragma: no cover - diagnostic path
             errors.append(f"{record.image_id}: {exc}")
-    raise RuntimeError(
-        "Could not infer feature dimension from any slide. Tried:\n  "
+    msg = (
+        f"Could not infer feature dimension from any slide in '{features_root}'. Tried:\n  "
         + "\n  ".join(errors)
+        + f"\n\nHint: Feature files are missing! Download the real PANDA ResNet50 features (~600 MB) by running:\n"
+        f"  python scripts/download_real_features.py --out-dir {features_root}"
     )
+    raise RuntimeError(msg)
 
 
 def describe_dataset(
