@@ -1,0 +1,260 @@
+"""Build 03_abmil_training.ipynb for Google Colab and local execution."""
+
+import json
+from pathlib import Path
+
+
+def create_notebook():
+    notebook = {
+        "cells": [],
+        "metadata": {
+            "accelerator": "GPU",
+            "colab": {
+                "gpuType": "T4",
+                "provenance": [],
+            },
+            "language_info": {
+                "name": "python",
+            },
+        },
+        "nbformat": 4,
+        "nbformat_minor": 4,
+    }
+
+    def add_md(source: str):
+        notebook["cells"].append({
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [line + "\n" for line in source.strip().split("\n")],
+        })
+
+    def add_code(source: str):
+        notebook["cells"].append({
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [line + "\n" for line in source.strip().split("\n")],
+        })
+
+    # Cell 0
+    add_md(
+        "# 03 - ABMIL Baseline Training on Real PANDA Data\n\n"
+        "[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]"
+        "(https://colab.research.google.com/github/koushikkkkkkkkkk/prostate-mil-project/blob/main/notebooks/03_abmil_training.ipynb)\n\n"
+        "**Role:** Person 1 (Team Leader & Baseline Owner)\n"
+        "**Task:** Train the gated-attention ABMIL baseline on real PANDA features across 3 seeds (0, 1, 2).\n\n"
+        "All datasets and checkpoints are stored directly in **Google Drive in the cloud** — zero large files are stored on your local laptop."
+    )
+
+    # Cell 1
+    add_md(
+        "## 1. Setup & Environment\n"
+        "Clone the repository and install lightweight dependencies quietly without conflicting with Colab's pre-installed packages."
+    )
+
+    # Cell 2
+    add_code(
+        "# Setup repository and dependencies quietly\n"
+        "import os, sys\n"
+        "from pathlib import Path\n"
+        "\n"
+        "try:\n"
+        "    import google.colab\n"
+        "    IN_COLAB = True\n"
+        "    if not os.path.exists('prostate-mil-project'):\n"
+        "        !git clone https://github.com/koushikkkkkkkkkk/prostate-mil-project.git\n"
+        "        %cd prostate-mil-project\n"
+        "    else:\n"
+        "        %cd prostate-mil-project\n"
+        "        !git pull origin main\n"
+        "    !pip install -q pyyaml\n"
+        "except ImportError:\n"
+        "    IN_COLAB = False\n"
+        "\n"
+        "ROOT = Path.cwd().parent if Path.cwd().name == 'notebooks' else Path.cwd()\n"
+        "sys.path.insert(0, str(ROOT))\n"
+        "os.environ.setdefault('MPLBACKEND', 'Agg')\n"
+        "\n"
+        "import torch\n"
+        "print(f'Running in Colab: {IN_COLAB}')\n"
+        "print(f'Working directory: {ROOT}')\n"
+        "print(f'PyTorch: {torch.__version__} | GPU Available: {torch.cuda.is_available()}')\n"
+        "if torch.cuda.is_available():\n"
+        "    print(f'GPU Device: {torch.cuda.get_device_name(0)}')"
+    )
+
+    # Cell 3
+    add_md(
+        "## 2. Mount Google Drive\n"
+        "All 420 slide feature files (~600 MB) and training outputs will stay safely in your Google Drive cloud storage."
+    )
+
+    # Cell 4
+    add_code(
+        "# Mount Google Drive\n"
+        "if IN_COLAB:\n"
+        "    from google.colab import drive\n"
+        "    drive.mount('/content/drive')\n"
+        "    GDRIVE_DIR = Path('/content/drive/MyDrive/prostate_mil_data')\n"
+        "    FEATURES_DIR = GDRIVE_DIR / 'features'\n"
+        "    BACKUP_DIR = GDRIVE_DIR / 'results'\n"
+        "else:\n"
+        "    FEATURES_DIR = ROOT / 'data/features'\n"
+        "    BACKUP_DIR = ROOT / 'results'\n"
+        "\n"
+        "FEATURES_DIR.mkdir(parents=True, exist_ok=True)\n"
+        "BACKUP_DIR.mkdir(parents=True, exist_ok=True)\n"
+        "print(f'Cloud feature directory: {FEATURES_DIR}')"
+    )
+
+    # Cell 5
+    add_md(
+        "## 3. Download Real PANDA ResNet50 Features to Google Drive\n"
+        "We download pre-extracted 1024-D ResNet50 patch embeddings for our 420 slides (300 train, 60 val, 60 test) from the Hugging Face computational pathology repository.\n"
+        "* Total download: ~600 MB (takes ~1-2 min on Colab's cloud connection).\n"
+        "* Once downloaded to Google Drive, future runs will find them cached instantly!"
+    )
+
+    # Cell 6
+    add_code(
+        "# Download real features directly to Google Drive\n"
+        "MANIFEST = ROOT / 'data/common_split.csv'\n"
+        "existing = list(FEATURES_DIR.glob('*.pt'))\n"
+        "print(f'Status: {len(existing)} / 420 feature files currently in Google Drive.')\n"
+        "\n"
+        "if len(existing) < 420:\n"
+        "    print('Downloading real ResNet50 features directly into Google Drive...')\n"
+        "    !python scripts/download_real_features.py --manifest {MANIFEST} --out-dir \"{FEATURES_DIR}\" --workers 16\n"
+        "else:\n"
+        "    print('All 420 real slide features already present in Google Drive!')"
+    )
+
+    # Cell 7
+    add_md(
+        "## 4. Train ABMIL Baseline (3 Seeds: 0, 1, 2)\n"
+        "We train across seeds 0, 1, 2 on the locked `data/common_split.csv` using Colab's GPU.\n"
+        "Each epoch will stream progress below. On a T4 GPU, training all 3 seeds takes ~3-4 minutes."
+    )
+
+    # Cell 8
+    add_code(
+        "CONFIG = ROOT / 'configs/abmil.yaml'\n"
+        "OUT = ROOT / 'results/metrics/abmil'\n"
+        "OUT.mkdir(parents=True, exist_ok=True)\n"
+        "\n"
+        "!python -m src.train --model abmil --manifest {MANIFEST} --features-root \"{FEATURES_DIR}\" --config {CONFIG} --out-dir {OUT} --seeds 0 1 2"
+    )
+
+    # Cell 9
+    add_md(
+        "## 5. Baseline Results & Confusion Matrix\n"
+        "Display the official baseline metrics and the test-set confusion matrix."
+    )
+
+    # Cell 10
+    add_code(
+        "import json\n"
+        "import pandas as pd\n"
+        "from IPython.display import Image, display\n"
+        "\n"
+        "table_file = OUT / 'table_abmil.md'\n"
+        "if table_file.exists():\n"
+        "    print('### Official Baseline Results across 3 Seeds:')\n"
+        "    print(table_file.read_text())\n"
+        "\n"
+        "agg_file = OUT / 'aggregate_abmil.json'\n"
+        "if agg_file.exists():\n"
+        "    agg = json.loads(agg_file.read_text())\n"
+        "    print('Per-seed summary:')\n"
+        "    display(pd.DataFrame(agg.get('per_run', [])))\n"
+        "\n"
+        "conf_pngs = sorted(OUT.glob('confusion_*.png'))\n"
+        "if conf_pngs:\n"
+        "    print(f'Test Confusion Matrix ({conf_pngs[0].name}):')\n"
+        "    display(Image(filename=str(conf_pngs[0]), width=450))"
+    )
+
+    # Cell 11
+    add_md(
+        "## 6. Attention Analysis & Top-Patch Attribution\n"
+        "Person 1 sanity check: inspect attention weight distributions across test slides to verify the model is concentrating attention on informative patches."
+    )
+
+    # Cell 12
+    add_code(
+        "import numpy as np\n"
+        "import matplotlib.pyplot as plt\n"
+        "from src.dataset import FeatureBagDataset, read_manifest, split_records\n"
+        "from src.evaluate_clam_sb import load_checkpoint\n"
+        "from src.heatmaps import attention_entropy, normalised_attention_entropy\n"
+        "\n"
+        "ckpt_path = OUT / 'checkpoints/abmil_seed0_best.pt'\n"
+        "if ckpt_path.exists():\n"
+        "    device = 'cuda' if torch.cuda.is_available() else 'cpu'\n"
+        "    model, _ = load_checkpoint(ckpt_path, device=device)\n"
+        "    \n"
+        "    records = split_records(read_manifest(MANIFEST), 'test')\n"
+        "    dataset = FeatureBagDataset(records[:5], FEATURES_DIR, load_coords=False, train=False)\n"
+        "    \n"
+        "    fig, axes = plt.subplots(1, min(5, len(dataset)), figsize=(18, 3.5))\n"
+        "    if len(dataset) == 1:\n"
+        "        axes = [axes]\n"
+        "        \n"
+        "    print('Attention entropy on test slides (Seed 0):')\n"
+        "    for i in range(min(5, len(dataset))):\n"
+        "        item = dataset[i]\n"
+        "        rec = dataset.records[i]\n"
+        "        feats = item['features'].to(device).unsqueeze(0)\n"
+        "        with torch.no_grad():\n"
+        "            out = model(feats)\n"
+        "        attn = out['attention'].squeeze(0).cpu().numpy()\n"
+        "        pred = int(out['logits'].argmax(dim=-1).squeeze(0).cpu())\n"
+        "        \n"
+        "        ent = attention_entropy(attn)\n"
+        "        norm_ent = normalised_attention_entropy(attn)\n"
+        "        print(f'Slide {rec.image_id[:10]}... | True ISUP: {rec.label} | Pred ISUP: {pred} | Patches: {len(attn)} | Entropy: {ent:.3f}')\n"
+        "        \n"
+        "        ax = axes[i]\n"
+        "        ax.hist(attn, bins=30, color='#4c72b0', edgecolor='white')\n"
+        "        ax.set_title(f'True: {rec.label} | Pred: {pred}\\n{rec.image_id[:8]}...', fontsize=10)\n"
+        "        ax.set_xlabel('Attention')\n"
+        "        if i == 0:\n"
+        "            ax.set_ylabel('Patch count')\n"
+        "            \n"
+        "    plt.tight_layout()\n"
+        "    plt.show()\n"
+        "else:\n"
+        "    print(f'Checkpoint {ckpt_path} not found. Run training cell first.')"
+    )
+
+    # Cell 13
+    add_md(
+        "## 7. Cloud Backup & Handoff to Person 2 (Archit)\n"
+        "Back up results to Google Drive and review the exact deliverables Person 2 needs for the paired statistical test."
+    )
+
+    # Cell 14
+    add_code(
+        "import shutil\n"
+        "\n"
+        "# Backup results to Google Drive\n"
+        "target_backup = BACKUP_DIR / 'abmil'\n"
+        "if target_backup.exists():\n"
+        "    shutil.rmtree(target_backup)\n"
+        "shutil.copytree(OUT, target_backup)\n"
+        "print(f'Results permanently backed up to Google Drive at: {target_backup}')\n"
+        "\n"
+        "# Deliverables for Person 2:\n"
+        "pred_file = OUT / 'predictions_abmil_seed0.csv'\n"
+        "print(f'Deliverable for Person 2: {pred_file.name} (exists: {pred_file.exists()})')\n"
+        "print('Archit can now run paired McNemar & Bootstrap tests with CLAM-SB using this file!')"
+    )
+
+    out_path = Path("notebooks/03_abmil_training.ipynb")
+    out_path.write_text(json.dumps(notebook, indent=2), encoding="utf-8")
+    print(f"Successfully generated {out_path} with {len(notebook['cells'])} cells.")
+
+
+if __name__ == "__main__":
+    create_notebook()
