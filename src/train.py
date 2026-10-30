@@ -103,7 +103,11 @@ def set_seed(seed: int) -> None:
 def resolve_device(requested: str = "auto") -> torch.device:
     if requested and requested != "auto":
         return torch.device(requested)
-    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        return torch.device("mps")
+    return torch.device("cpu")
 
 
 def _loader(

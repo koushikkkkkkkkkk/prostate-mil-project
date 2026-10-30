@@ -172,7 +172,14 @@ def train_patch_cnn(
     num_workers: int = 0,
 ) -> Dict[str, Any]:
     """Minimal, dependency-light training loop for the patch baseline."""
-    device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
+    if not device:
+        if torch.cuda.is_available():
+            device = "cuda"
+        elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+            device = "mps"
+        else:
+            device = "cpu"
+    device = torch.device(device)
     model = PatchCNN(config).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-5)
     criterion = nn.CrossEntropyLoss()
@@ -231,7 +238,14 @@ def predict_patch_grid(
     device: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Predict malignant probability per patch and (optionally) place it in a grid."""
-    device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
+    if not device:
+        if torch.cuda.is_available():
+            device = "cuda"
+        elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+            device = "mps"
+        else:
+            device = "cpu"
+    device = torch.device(device)
     model = model.to(device).eval()
     paths = list(patch_paths)
     if not paths:
