@@ -85,6 +85,8 @@ def main() -> int:
     parser.add_argument(
         "--workers",
         type=int,
+        nargs="?",
+        const=8,
         default=8,
         help="Number of concurrent download threads (default: 8)",
     )
