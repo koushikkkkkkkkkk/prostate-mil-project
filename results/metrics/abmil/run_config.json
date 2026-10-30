@@ -1,0 +1,32 @@
+{
+  "model": "abmil",
+  "model_config": {
+    "in_dim": 1024,
+    "embed_dim": 512,
+    "attention_dim": 256,
+    "n_classes": 6,
+    "dropout": 0.25,
+    "gated": true
+  },
+  "train_kwargs": {
+    "max_epochs": 50,
+    "patience": 12,
+    "batch_size": 16,
+    "lr": 0.0002,
+    "weight_decay": 1e-05,
+    "max_patches": 4096,
+    "class_weights": "balanced",
+    "grad_clip": 5.0,
+    "device": "auto"
+  },
+  "manifest": "/content/prostate-mil-project/data/common_split.csv",
+  "features_root": "/content/drive/MyDrive/prostate_mil_data/features",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "n_train": 300,
+  "n_val": 60,
+  "n_test": 60
+}
