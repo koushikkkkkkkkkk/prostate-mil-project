@@ -243,13 +243,18 @@ class FeatureBagDataset(Dataset):
         load_coords: bool = False,
         seed: int = 42,
     ) -> None:
-        self.records = list(records)
         self.features_root = Path(features_root)
         self.max_patches = max_patches
         self.train = train
         self.load_coords = load_coords
         self.seed = seed
         self._epoch = 0
+
+        # Filter out records whose feature file is missing to prevent mid-training crashes
+        existing = [
+            r for r in records if feature_path(self.features_root, r.image_id).exists()
+        ]
+        self.records = existing if existing else list(records)
 
     def __len__(self) -> int:
         return len(self.records)

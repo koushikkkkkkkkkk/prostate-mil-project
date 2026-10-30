@@ -420,6 +420,17 @@ def run_experiment(
     if not test_records:
         raise ValueError("Test split is empty -- check the manifest's 'split' column")
 
+    # Filter to existing features on disk so missing files never crash training
+    n_raw_train = len(train_records)
+    train_records = [r for r in train_records if feature_path(features_root, r.image_id).exists()]
+    val_records = [r for r in val_records if feature_path(features_root, r.image_id).exists()]
+    test_records = [r for r in test_records if feature_path(features_root, r.image_id).exists()]
+    if verbose and len(train_records) < n_raw_train:
+        print(
+            f"[data] Using available feature bags: {len(train_records)}/{n_raw_train} train, "
+            f"{len(val_records)} val, {len(test_records)} test slides."
+        )
+
     # The features on disk are ground truth for D; the config file only provides
     # a default. An explicit --in-dim / in_dim argument still wins.
     detected_in_dim = infer_feature_dim(train_records, features_root)
