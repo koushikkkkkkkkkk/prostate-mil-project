@@ -224,6 +224,61 @@ def feature_path(features_root: str | Path, image_id: str) -> Path:
 
 
 # --------------------------------------------------------------------------- #
+# Coverage validation (never silently change the evaluation set)
+# --------------------------------------------------------------------------- #
+def validate_feature_coverage(
+    records: Sequence[SlideRecord],
+    features_root: str | Path,
+    fail_fast: bool = True,
+) -> Dict[str, Any]:
+    """Check that every slide in the manifest has a feature file.
+
+    Silent filtering of missing slides is dangerous: if two test slides are
+    missing, the test split quietly becomes 58 slides and every metric stops
+    being comparable to a teammate's run. This function reports the damage per
+    split and, by default, refuses to continue.
+    """
+    features_root = Path(features_root)
+    report: Dict[str, Any] = {"per_split": {}, "missing": []}
+
+    for split in SPLITS + ("unknown",):
+        subset = [r for r in records if r.split == split]
+        if not subset:
+            continue
+        present = [r for r in subset if feature_path(features_root, r.image_id).exists()]
+        missing = [r.image_id for r in subset if not feature_path(features_root, r.image_id).exists()]
+        report["per_split"][split] = {
+            "expected": len(subset),
+            "present": len(present),
+            "missing": len(missing),
+        }
+        report["missing"].extend(missing)
+
+    if report["missing"] and fail_fast:
+        preview = ", ".join(report["missing"][:5])
+        more = "" if len(report["missing"]) <= 5 else f" (+{len(report['missing']) - 5} more)"
+        raise FileNotFoundError(
+            f"{len(report['missing'])} slide(s) in the manifest have no feature file under "
+            f"'{features_root}': {preview}{more}\n"
+            "  Download them with:  python scripts/download_real_features.py "
+            "--manifest data/common_split.csv --out-dir "
+            f"{features_root}\n"
+            "  Or check coverage first:  python scripts/attach_patch_coords.py --verify-only"
+        )
+    return report
+
+
+def format_coverage_table(report: Dict[str, Any]) -> str:
+    """One-line-per-split summary used by the CLI drivers."""
+    lines = ["split     expected  present  missing"]
+    for split, counts in report["per_split"].items():
+        lines.append(
+            f"{split:<9} {counts['expected']:>8} {counts['present']:>8} {counts['missing']:>8}"
+        )
+    return "\n".join(lines)
+
+
+# --------------------------------------------------------------------------- #
 # Torch datasets
 # --------------------------------------------------------------------------- #
 class FeatureBagDataset(Dataset):
@@ -243,18 +298,20 @@ class FeatureBagDataset(Dataset):
         load_coords: bool = False,
         seed: int = 42,
     ) -> None:
+        self.records = list(records)
         self.features_root = Path(features_root)
+        missing = [r.image_id for r in self.records if not feature_path(self.features_root, r.image_id).exists()]
+        if missing:
+            raise FileNotFoundError(
+                f"{len(missing)} of {len(self.records)} slides have no feature file under "
+                f"'{self.features_root}' (first: {missing[0]}). Refusing to train on a "
+                "silently reduced dataset -- download the features first."
+            )
         self.max_patches = max_patches
         self.train = train
         self.load_coords = load_coords
         self.seed = seed
         self._epoch = 0
-
-        # Filter out records whose feature file is missing to prevent mid-training crashes
-        existing = [
-            r for r in records if feature_path(self.features_root, r.image_id).exists()
-        ]
-        self.records = existing if existing else list(records)
 
     def __len__(self) -> int:
         return len(self.records)
@@ -341,13 +398,10 @@ def infer_feature_dim(
             return int(features.size(1))
         except Exception as exc:  # pragma: no cover - diagnostic path
             errors.append(f"{record.image_id}: {exc}")
-    msg = (
-        f"Could not infer feature dimension from any slide in '{features_root}'. Tried:\n  "
+    raise RuntimeError(
+        "Could not infer feature dimension from any slide. Tried:\n  "
         + "\n  ".join(errors)
-        + f"\n\nHint: Feature files are missing! Download the real PANDA ResNet50 features (~600 MB) by running:\n"
-        f"  python scripts/download_real_features.py --out-dir {features_root}"
     )
-    raise RuntimeError(msg)
 
 
 def describe_dataset(
