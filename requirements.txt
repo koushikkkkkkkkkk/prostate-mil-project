@@ -1,34 +1,29 @@
-# Deep Learning
-torch>=2.0.0
-torchvision>=0.15.0
-# CPU-only install is much smaller: pip install torch --index-url https://download.pytorch.org/whl/cpu
+# Core dependencies: enough for the test suite and the synthetic mock pipeline.
+#
+# Verified with: Python 3.13 | torch 2.15 (CPU) | numpy 2.3 | pandas 2.2 |
+#                scikit-learn 1.6 | matplotlib 3.10 | Pillow 12.3
+#
+# PYTHON VERSION: use Python 3.10 - 3.13.
+# On Python 3.14 you MUST keep numpy >= 2.0 (numpy 1.x has no working support for
+# 3.14 and fails at import with:
+#     OverflowError: cannot convert longdouble infinity to integer
+# ).
+#
+# CPU-only machine? Install torch from the CPU index first (much smaller download):
+#     pip install torch --index-url https://download.pytorch.org/whl/cpu
+#     pip install -r requirements.txt
 
-# Whole Slide Imaging & Computer Vision
-openslide-python
-opencv-python-headless
-Pillow
+# --- deep learning ---
+torch>=2.2
 
-# Data Processing & Numerical Computing
-numpy>=1.24.0
-pandas>=2.0.0
-scipy>=1.10.0
-scikit-learn>=1.2.0
-
-# Config & Notebooks
+# --- numerical / ML / plotting ---
+numpy>=1.26
+pandas>=2.1
+scipy>=1.11
+scikit-learn>=1.4
+matplotlib>=3.8
+Pillow>=10.0
 pyyaml>=6.0
-nbformat>=5.9.0
 
-# Plotting & Visualization
-matplotlib>=3.7.0
-seaborn>=0.12.0
-
-# Interactive Application
-streamlit>=1.28.0
-
-# Notebooks & Utilities
-tqdm>=4.65.0
-jupyter
-ipykernel
-
-# Optional (person 4 statistical baseline); the code degrades gracefully without it
-# xgboost>=2.0.0
+# Optional extras (notebooks, Streamlit demo, real WSI feature extraction):
+#     pip install -r requirements-full.txt

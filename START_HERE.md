@@ -35,25 +35,42 @@ cd prostate-mil-project
 
 ## 2. Create an environment and install dependencies
 
+**Python version matters.** Use **3.10 – 3.13**. Verified combination: Python 3.13,
+torch 2.15 (CPU), numpy 2.3, pandas 2.2, scikit-learn 1.6, matplotlib 3.10.
+
+If you are on Python 3.14, keep numpy **>= 2.0**. numpy 1.x does not work on 3.14 and
+fails at import with `OverflowError: cannot convert longdouble infinity to integer`.
+
 ```bash
 python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
+source .venv/bin/activate            # Windows PowerShell: .venv\Scripts\Activate.ps1
+                                     # Windows cmd:        .venv\Scripts\activate.bat
+
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-On a CPU-only laptop the PyTorch install is the slow part. The smaller route:
+On a CPU-only laptop the PyTorch install is the slow part. Smaller route:
 
 ```bash
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+pip install torch --index-url https://download.pytorch.org/whl/cpu
 pip install -r requirements.txt
 ```
 
-Check what you got:
+Optional extras (Streamlit demo, notebooks, real WSI feature extraction):
 
 ```bash
-python -c "import torch, sklearn, matplotlib, pandas, PIL; print('torch', torch.__version__)"
+pip install -r requirements-full.txt
 ```
+
+Always confirm the environment before going further:
+
+```bash
+python scripts/check_env.py
+```
+
+It prints every version, flags broken combinations (numpy 1.x on Python 3.13+, missing
+venv, mismatched torch/torchvision) and prints the exact command that fixes each one.
 
 ## 3. Run the tests (30 seconds, no data needed)
 
@@ -67,7 +84,8 @@ before going further — everything downstream depends on these passing.
 ## 4. Run the full pipeline on synthetic data (~1 minute)
 
 ```bash
-bash scripts/run_mock_demo.sh          # Windows: run the individual commands from the script
+bash scripts/run_mock_demo.sh          # macOS / Linux / Git Bash / WSL
+powershell -ExecutionPolicy Bypass -File scripts\run_mock_demo.ps1   # Windows PowerShell
 ```
 
 This generates synthetic slides, trains ABMIL and CLAM-SB (with and without the
@@ -116,6 +134,26 @@ if you would rather keep history, use `git pull --rebase origin main` first.
 
 Note: `data/mock/` and `results/mock_*` are gitignored, so the push stays small.
 
+## 6b. Real PANDA data path (once Person 1 has published the split)
+
+```bash
+git pull origin main                                   # gets data/common_split.csv + ABMIL predictions
+python scripts/download_real_features.py --manifest data/common_split.csv --out-dir data/features --workers 16
+pip install h5py
+python scripts/attach_patch_coords.py                 # REAL patch coords -> real heatmaps
+python scripts/attach_patch_coords.py --verify-only    # expect 399/420 with coords
+```
+
+Then run the experiments (bash or Windows PowerShell):
+
+```bash
+bash scripts/run_person2_experiments.sh
+powershell -ExecutionPolicy Bypass -File scripts\run_person2_experiments.ps1
+```
+
+The runner refuses to start unless all 420 feature files (300/60/60) are present —
+a silently reduced test split would invalidate every metric.
+
 ## 7. What comes next (the blocking dependency)
 
 Everything real needs **Person 1's outputs**:
@@ -156,12 +194,16 @@ Then fill in `docs/RESULTS_LOG.md` with the real numbers.
 
 | symptom | fix |
 | --- | --- |
-| `ModuleNotFoundError: No module named 'torch'` | step 2 — installed packages live in the venv, activate it in every new shell |
+| `OverflowError: cannot convert longdouble infinity to integer` at numpy import | numpy 1.x on Python 3.13+. `pip install --upgrade "numpy>=2.0"`, or rebuild the venv on Python 3.12/3.13 |
+| `ImportError: Failed to import test module` | usually a package import blowing up — run `python scripts/check_env.py` to see which one |
+| `ModuleNotFoundError: No module named 'torch'` | step 2 — packages live in the venv, activate it in every new shell |
 | `torch` install is huge / times out | use the CPU index URL shown in step 2 |
-| `FileNotFoundError: data/common_split.csv` | you ran a real-data command before Person 1 delivered; use `bash scripts/run_mock_demo.sh` |
-| `bash: scripts/run_mock_demo.sh: No such file` | wrong directory, or on Windows run the commands inside the script manually |
+| `FileNotFoundError: data/common_split.csv` | you ran a real-data command before Person 1 delivered; use the mock demo |
+| `bash: scripts/run_mock_demo.sh: No such file` | wrong directory; on Windows use `scripts\run_mock_demo.ps1` or copy the commands out of the `.sh` |
+| `run_mock_demo.ps1 cannot be loaded because running scripts is disabled` | `powershell -ExecutionPolicy Bypass -File scripts\run_mock_demo.ps1` |
 | `ModuleNotFoundError: yaml` | `pip install pyyaml` |
 | matplotlib errors on a headless machine | prefix commands with `MPLBACKEND=Agg` |
+| `streamlit: command not found` | `pip install -r requirements-full.txt` (optional) |
 | heatmap export warns about missing coords | the `.pt` file has no `coords`; re-export features with `src/feature_extraction.py` |
 
 ## The one rule
