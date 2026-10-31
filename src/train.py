@@ -433,15 +433,18 @@ def run_experiment(
             f"{len(val_records)} val, {len(test_records)} test slides."
         )
 
-    # The features on disk are ground truth for D; the config file only provides
-    # a default. An explicit --in-dim / in_dim argument still wins.
+    # The features on disk are ground truth for D; an explicit --in-dim argument
+    # still overrides if the user intentionally wants to force a specific size.
     detected_in_dim = infer_feature_dim(train_records, features_root)
-    resolved_in_dim = int(train_kwargs.pop("in_dim", None) or in_dim or detected_in_dim)
+    explicit_in_dim = train_kwargs.pop("in_dim", None) or in_dim
+    resolved_in_dim = int(explicit_in_dim if explicit_in_dim is not None else detected_in_dim)
+
     if model_config.get("in_dim") not in (None, resolved_in_dim):
-        print(
-            f"[warn] config in_dim={model_config['in_dim']} but features are "
-            f"{resolved_in_dim}-d; using the feature dimension."
-        )
+        if verbose:
+            print(
+                f"[info] Setting model in_dim={resolved_in_dim} (probed from disk); "
+                f"config specified {model_config.get('in_dim')}."
+            )
     model_config = {**model_config, "in_dim": resolved_in_dim}
 
     run_metrics: List[Dict[str, Any]] = []
@@ -589,7 +592,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         out_dir=out_dir,
         seeds=args.seeds,
         train_kwargs=training,
-        in_dim=data_config.get("in_dim"),
+        in_dim=args.in_dim,
         verbose=not args.quiet,
     )
     headline = summary["aggregate"].get("qwk", {})
