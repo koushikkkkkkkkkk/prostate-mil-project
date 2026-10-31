@@ -19,7 +19,7 @@
     "grad_clip": 5.0,
     "device": "auto"
   },
-  "manifest": "/content/prostate-mil-project/data/common_split.csv",
+  "manifest": "/content/prostate-mil-project/prostate-mil-project/data/common_split.csv",
   "features_root": "/content/drive/MyDrive/prostate_mil_data/features",
   "seeds": [
     0,

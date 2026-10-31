@@ -101,7 +101,7 @@
   "instance_loss_active": false,
   "instance_loss_weight": 0.0,
   "n_parameters": 790791,
-  "train_seconds": 177.8155813217163,
+  "train_seconds": 183.48304224014282,
   "qwk_bootstrap_95ci": {
     "point": 0.7397260273972602,
     "lo": 0.596331092212476,
