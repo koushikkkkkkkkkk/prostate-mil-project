@@ -109,15 +109,16 @@ def export_attention_heatmaps(
 
     manifest_rows: List[Dict[str, Any]] = []
     localisation_rows: List[Dict[str, Any]] = []
+    skipped_no_coords: List[str] = []
 
     for index in range(len(dataset)):
         item = dataset[index]
         record = dataset.records[index]
         if "coords" not in item:
-            raise ValueError(
-                f"Slide {record.image_id} has no coords; heatmaps need patch (x, y) origins. "
-                "Re-export features with src/feature_extraction.py."
-            )
+            # A slide without patch coordinates cannot be placed on the slide, so it
+            # is skipped with a warning instead of aborting the whole export.
+            skipped_no_coords.append(record.image_id)
+            continue
 
         features = item["features"].to(torch_device).unsqueeze(0)
         with torch.no_grad():
@@ -197,10 +198,18 @@ def export_attention_heatmaps(
     if localisation_rows:
         _write_csv(out_dir / "localisation_scores.csv", localisation_rows)
 
+    if skipped_no_coords:
+        print(
+            f"[warn] {len(skipped_no_coords)} slide(s) skipped: no patch coords. "
+            "Run scripts/attach_patch_coords.py to fetch them."
+        )
+
     summary = {
         "checkpoint": str(checkpoint),
         "split": split,
         "n_slides": len(manifest_rows),
+        "n_skipped_no_coords": len(skipped_no_coords),
+        "skipped_no_coords": skipped_no_coords,
         "out_dir": str(out_dir),
         "colormap": colormap,
         "patch_size": patch_size,
