@@ -79,7 +79,7 @@ class TestModels(unittest.TestCase):
         self.assertEqual(tuple(output["logits"].shape), (2, N_CLASSES))
         self.assertEqual(tuple(output["attention"].shape), (2, 40))
         # padded patches must receive zero attention
-        self.assertAlmostEqual(float(output["attention"][1, -5:].sum()), 0.0, places=6)
+        self.assertAlmostEqual(float(output["attention"][1, -5:].detach().sum()), 0.0, places=6)
         self.assertAlmostEqual(float(output["attention"].sum(dim=1)[0]), 1.0, places=5)
 
     def test_clam_sb_shapes_and_instance_loss(self):
