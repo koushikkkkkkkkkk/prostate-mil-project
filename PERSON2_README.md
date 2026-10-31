@@ -38,11 +38,34 @@ write-up structure, demo UI.
 **Never use mock results for:** any number in the report, slides, or demo. Every mock
 output folder contains a `README.md` that says so — keep it there.
 
-When Person 1 delivers, you change three arguments and nothing else:
+When Person 1's split + features arrive, you change paths and nothing else:
 
 ```bash
 MANIFEST=data/common_split.csv FEATURES=data/features bash scripts/run_person2_experiments.sh
+# Windows:
+powershell -ExecutionPolicy Bypass -File scripts\run_person2_experiments.ps1
 ```
+
+### 1c. One extra step the downloader does not cover: patch coordinates
+
+`scripts/download_real_features.py` fetches ``features [N, 1024]`` only — no
+``coords``. Without coordinates there are no spatial heatmaps and no localisation
+score, so run:
+
+```bash
+pip install h5py
+python scripts/attach_patch_coords.py --manifest data/common_split.csv --features-dir data/features
+python scripts/attach_patch_coords.py --verify-only     # coverage report
+```
+
+It pulls `panda/patches/{image_id}.h5` from the same Hugging Face dataset
+(a tiny `coords [N,2]` tensor, row-aligned with the features) and rewrites each
+`.pt` as `{"features", "coords"}`.
+
+**Known gap:** 399 / 420 slides have a coords file on the Hub; 21 do not
+(404). Of those, **4 are test slides**, so heatmaps + localisation cover
+**56 / 60** test slides. State that in the report; do not silently drop them
+and do not pretend the heatmap analysis used all 60.
 
 ---
 
@@ -198,3 +221,28 @@ Shared files you may read but not change alone: `src/dataset.py`, `src/train.py`
   inherent to patch-level MIL, not a bug.
 * The Streamlit app reads CLAM-SB checkpoints directly, so your model appears in the demo
   without extra work.
+
+---
+
+## One command to assemble the report numbers
+
+After training / evaluating, run:
+
+```powershell
+python scripts\summarize_person2.py --results results --out results\PERSON2_SUMMARY.md
+```
+
+It reads `results\metrics\clam_sb\{with_instance,without_instance}\aggregate_clam_sb.json`,
+`results\metrics\abmil\aggregate_abmil.json`, every `predictions_*_seed*.csv`,
+`results\metrics\clam_sb\eval*\attention_*.csv`, `results\heatmaps\*\export_summary.json`
+and `results\metrics\statistical\statistical_baselines.json`, then writes a single
+report-ready markdown file:
+
+* instance-loss ablation table (QWK mean ± sd, accuracy, balanced accuracy, macro F1)
+* **paired** per-seed ΔQWK with bootstrap CI + exact McNemar, CLAM±inst and CLAM vs ABMIL
+* attention sharpness (entropy, normalised entropy, top-10 attention share) per arm
+* heatmap coverage and the known 56/60 coordinate gap
+* statistical baselines and an interpretation skeleton
+
+Missing inputs are reported as "not run yet" instead of crashing, so it is safe to run at any
+point. Covered by `tests/test_summarize_person2.py`.

@@ -72,11 +72,18 @@ trainer, evaluator, heatmap renderer and app work with all of them.
 
 ```bash
 git clone <repo-url> && cd prostate-mil-project
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+python -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\Activate.ps1
+pip install -r requirements.txt                        # core (tests + mock demo)
 # CPU-only machine? install torch separately, it is much smaller:
 # pip install torch --index-url https://download.pytorch.org/whl/cpu
+# Streamlit demo / notebooks / real feature extraction:
+# pip install -r requirements-full.txt
+
+python scripts/check_env.py    # versions + broken-combination detector, run this first
 ```
+
+Requires **Python 3.10 – 3.13** (verified: 3.13 + torch 2.15 + numpy 2.3). On 3.14 keep
+`numpy>=2.0` — numpy 1.x is broken there.
 
 ### 3a. Before Person 1's real features exist (synthetic, ~1 minute)
 

@@ -1,5 +1,5 @@
 # Convenience targets. `make help` lists them.
-.PHONY: help install install-cpu test mock split demo abmil clam clean
+.PHONY: help check install install-cpu install-full test mock split demo abmil clam clean
 
 help:
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -8,7 +8,14 @@ install:  ## install dependencies (GPU/default torch)
 	pip install -r requirements.txt
 
 install-cpu:  ## install dependencies with CPU-only torch
-	pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+	pip install torch --index-url https://download.pytorch.org/whl/cpu
+	pip install -r requirements.txt
+
+install-full:  ## install optional extras (streamlit, notebooks, torchvision, openslide)
+	pip install -r requirements-full.txt
+
+check:  ## verify the Python environment / package versions
+	python scripts/check_env.py
 
 test:  ## run the unit + end-to-end tests
 	MPLBACKEND=Agg python -m unittest discover -s tests -v
