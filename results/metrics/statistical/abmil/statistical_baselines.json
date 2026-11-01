@@ -1,0 +1,116 @@
+{
+  "ordinal_logistic": {
+    "n": 60,
+    "qwk": 0.7254901960784313,
+    "accuracy": 0.2833333333333333,
+    "balanced_accuracy": 0.2833333333333333,
+    "macro_f1": 0.22238930659983291,
+    "weighted_f1": 0.2223893065998329,
+    "per_class": {
+      "0": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 10
+      },
+      "1": {
+        "precision": 0.36363636363636365,
+        "recall": 0.8,
+        "f1": 0.5,
+        "support": 10
+      },
+      "2": {
+        "precision": 0.2222222222222222,
+        "recall": 0.2,
+        "f1": 0.21052631578947367,
+        "support": 10
+      },
+      "3": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 10
+      },
+      "4": {
+        "precision": 0.2777777777777778,
+        "recall": 0.5,
+        "f1": 0.35714285714285715,
+        "support": 10
+      },
+      "5": {
+        "precision": 0.4,
+        "recall": 0.2,
+        "f1": 0.26666666666666666,
+        "support": 10
+      }
+    },
+    "confusion_matrix": [
+      [
+        0,
+        8,
+        1,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        8,
+        2,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        5,
+        2,
+        3,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        3,
+        0,
+        6,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        1,
+        5,
+        3
+      ],
+      [
+        1,
+        0,
+        0,
+        0,
+        7,
+        2
+      ]
+    ],
+    "qwk_recompute_check": 0.7254901960784313
+  },
+  "n_train": 300,
+  "n_test": 60,
+  "features": [
+    "mean_attention",
+    "median_attention",
+    "std_attention",
+    "max_attention",
+    "top10_attention_mean",
+    "attention_entropy",
+    "high_attention_ratio",
+    "embedding_norm_mean",
+    "embedding_norm_std",
+    "n_patches"
+  ],
+  "xgboost": {
+    "skipped": "xgboost not installed"
+  }
+}

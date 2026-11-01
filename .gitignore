@@ -84,3 +84,8 @@ Thumbs.db
 # ==========================================
 data/mock/
 results/mock_*/
+data/features_chief/
+data/features_gigap/
+data/features_uni/
+data/thumbnails/
+data/masks/

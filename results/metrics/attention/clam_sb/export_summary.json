@@ -1,0 +1,12 @@
+{
+  "checkpoint": "results/metrics/clam_sb/with_instance/checkpoints/clam_sb_seed0_best.pt",
+  "attention_csv": "results\\metrics\\attention\\clam_sb\\attention_clam_sb_seed0.csv",
+  "model": "clam_sb",
+  "seed": 0,
+  "split": "all",
+  "n_slides": 420,
+  "mean_normalised_entropy": 0.8003040447508725,
+  "mean_top10_attention_share": 0.3431708947444955,
+  "out_dir": "results\\metrics\\attention\\clam_sb",
+  "rendered_heatmaps": false
+}

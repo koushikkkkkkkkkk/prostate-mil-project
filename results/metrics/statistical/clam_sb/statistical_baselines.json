@@ -1,0 +1,116 @@
+{
+  "ordinal_logistic": {
+    "n": 60,
+    "qwk": 0.7398648648648649,
+    "accuracy": 0.36666666666666664,
+    "balanced_accuracy": 0.3666666666666667,
+    "macro_f1": 0.32548745869979995,
+    "weighted_f1": 0.3254874586997999,
+    "per_class": {
+      "0": {
+        "precision": 0.6,
+        "recall": 0.3,
+        "f1": 0.4,
+        "support": 10
+      },
+      "1": {
+        "precision": 0.5625,
+        "recall": 0.9,
+        "f1": 0.6923076923076923,
+        "support": 10
+      },
+      "2": {
+        "precision": 0.3333333333333333,
+        "recall": 0.3,
+        "f1": 0.3157894736842105,
+        "support": 10
+      },
+      "3": {
+        "precision": 0.2,
+        "recall": 0.2,
+        "f1": 0.2,
+        "support": 10
+      },
+      "4": {
+        "precision": 0.2631578947368421,
+        "recall": 0.5,
+        "f1": 0.3448275862068966,
+        "support": 10
+      },
+      "5": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 10
+      }
+    },
+    "confusion_matrix": [
+      [
+        3,
+        5,
+        1,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        9,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        2,
+        2,
+        3,
+        2,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        2,
+        2,
+        6,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        4,
+        5,
+        1
+      ],
+      [
+        0,
+        0,
+        2,
+        1,
+        7,
+        0
+      ]
+    ],
+    "qwk_recompute_check": 0.7398648648648649
+  },
+  "n_train": 300,
+  "n_test": 60,
+  "features": [
+    "mean_attention",
+    "median_attention",
+    "std_attention",
+    "max_attention",
+    "top10_attention_mean",
+    "attention_entropy",
+    "high_attention_ratio",
+    "embedding_norm_mean",
+    "embedding_norm_std",
+    "n_patches"
+  ],
+  "xgboost": {
+    "skipped": "xgboost not installed"
+  }
+}
