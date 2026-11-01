@@ -1,0 +1,28 @@
+{
+  "tag": "fused_chief_gigap",
+  "encoders": [
+    "abmil_chief",
+    "abmil_gigap"
+  ],
+  "n_test_slides": 60,
+  "n_covered": 60,
+  "n_covered_by_single_encoder": 10,
+  "fused": {
+    "qwk": 0.9086021505376344,
+    "accuracy": 0.6333333333333333,
+    "balanced_accuracy": 0.6333333333333333,
+    "macro_f1": 0.6246477937267411
+  },
+  "per_encoder_seed0": {
+    "abmil_chief": {
+      "n": 57,
+      "qwk": 0.9162732137236387,
+      "accuracy": 0.5614035087719298
+    },
+    "abmil_gigap": {
+      "n": 53,
+      "qwk": 0.9363898223715794,
+      "accuracy": 0.6792452830188679
+    }
+  }
+}

@@ -1,0 +1,32 @@
+# CLAM-SB on the real PANDA subset (Person 2)
+# 300 train / 60 val / 60 test slides, 256x256 patches, ISUP grades 0-5.
+# Every number here is a *default to be justified in the report*, not a tuned
+# result: hyperparameters were chosen from the CLAM paper, not by test-set search.
+
+model:
+  in_dim: 768          # match Person 1's frozen encoder; the trainer auto-detects this
+  embed_dim: 512
+  attention_dim: 256
+  n_classes: 6
+  dropout: 0.25
+  gated: true           # gated attention (set false for the plain-attention ablation)
+  k_sample: 8           # B in the paper: 8 top + 8 bottom patches per slide
+  instance_loss: smooth_svm
+  instance_loss_weight: 0.30   # lambda; the ablation sets this to 0.0
+  subtyping: false
+  smooth_svm_alpha: 1.0
+  smooth_svm_tau: 1.0
+
+data:
+  in_dim: 768
+
+training:
+  max_epochs: 50
+  patience: 12          # early stopping on validation QWK
+  batch_size: 16        # slides per step; bags are padded, so keep small
+  lr: 2.0e-4
+  weight_decay: 1.0e-5
+  max_patches: 4096     # random subsample of huge slides during training
+  class_weights: balanced
+  grad_clip: 5.0
+  device: auto

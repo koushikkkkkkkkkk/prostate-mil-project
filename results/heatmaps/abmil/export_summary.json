@@ -1,0 +1,12 @@
+{
+  "checkpoint": "results/metrics/abmil/checkpoints/abmil_seed0_best.pt",
+  "attention_csv": "results\\heatmaps\\abmil\\attention_abmil_seed0.csv",
+  "model": "abmil",
+  "seed": 0,
+  "split": "test",
+  "n_slides": 56,
+  "mean_normalised_entropy": 0.6924381727532131,
+  "mean_top10_attention_share": 0.4518474120912807,
+  "out_dir": "results\\heatmaps\\abmil",
+  "rendered_heatmaps": true
+}

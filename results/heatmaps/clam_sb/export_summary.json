@@ -1,0 +1,14 @@
+{
+  "checkpoint": "results/metrics/clam_sb/with_instance/checkpoints/clam_sb_seed0_best.pt",
+  "split": "test",
+  "n_slides": 56,
+  "out_dir": "results\\heatmaps\\clam_sb",
+  "colormap": "jet",
+  "patch_size": 256,
+  "mean_normalised_entropy": 0.7743683624766299,
+  "localisation": {
+    "available": false
+  },
+  "instance_loss_active": true,
+  "seed": 0
+}

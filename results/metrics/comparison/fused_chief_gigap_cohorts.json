@@ -1,0 +1,52 @@
+{
+  "fused_file": "results/metrics/comparison/fused_chief_gigap.csv",
+  "n_total": 60,
+  "cohorts": {
+    "abmil_chief+abmil_gigap": {
+      "n": 50,
+      "qwk": 0.9058253733351271,
+      "accuracy": 0.62,
+      "errors": 19,
+      "off_by_one": 16
+    },
+    "abmil_chief": {
+      "n": 7,
+      "qwk": 0.798076923076923,
+      "accuracy": 0.5714285714285714,
+      "errors": 3,
+      "off_by_one": 2
+    },
+    "abmil_gigap": {
+      "n": 3,
+      "qwk": 1.0,
+      "accuracy": 1.0,
+      "errors": 0,
+      "off_by_one": 0
+    }
+  },
+  "on_fused_slide_set": {
+    "FUSED": {
+      "n": 60,
+      "qwk": 0.9086021505376344,
+      "accuracy": 0.6333333333333333
+    },
+    "abmil_chief": {
+      "n": 57,
+      "qwk": 0.9133738601823708,
+      "accuracy": 0.5789473684210527
+    },
+    "abmil_gigap": {
+      "n": 53,
+      "qwk": 0.8946568455512686,
+      "accuracy": 0.5849056603773585
+    }
+  },
+  "both_encoders": {
+    "n": 50,
+    "errors": 19
+  },
+  "single_encoder": {
+    "n": 10,
+    "errors": 3
+  }
+}
