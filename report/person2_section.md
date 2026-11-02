@@ -50,9 +50,9 @@ comparable (source: `results/metrics/comparison/paired_common_cohort.md`):
 
 | model | encoder | n | QWK | accuracy |
 | --- | --- | --- | --- | --- |
-| **CLAM-SB** | CHIEF (768-d) | 50 | **0.9298 ± 0.0016** | 0.6000 |
-| ABMIL | CHIEF (768-d) | 50 | 0.9182 ± 0.0043 | 0.5800 |
-| ABMIL | GigaPath (1536-d) | 50 | 0.9099 ± 0.0183 | 0.6133 |
+| **CLAM-SB** | CHIEF (768-d) | 50 | **0.9278 ± 0.0074** | 0.6067 |
+| ABMIL | CHIEF (768-d) | 50 | 0.9115 ± 0.0110 | 0.5667 |
+| ABMIL | GigaPath (1536-d) | 50 | 0.8907 ± 0.0132 | 0.5667 |
 | TransMIL | ResNet50 (1024-d) | 50 | 0.7113 ± 0.0583 | 0.4733 |
 | ABMIL | ResNet50 (1024-d) | 50 | 0.6995 ± 0.0136 | 0.3667 |
 
@@ -142,12 +142,14 @@ This is the part that makes the negative result credible rather than a cop-out:
 | --- | --- | --- | --- | --- | --- |
 | CHIEF 768-d | ABMIL → CLAM-SB | +0.0073 / +0.0109 / +0.0117 | spans 0 | 0.69 / 1.0 / 1.0 | no detectable effect |
 | ResNet50 1024-d | ABMIL → CLAM-SB (± instance) | 0.0000 / −0.0114 | spans 0 | 0.63 | no detectable effect |
-| CHIEF → ResNet50 (same aggregator) | ABMIL r50 → ABMIL CHIEF | **+0.1797 to +0.2144** | excludes 0 | 0.004 / 0.004 / 0.019 | real effect |
+| CHIEF → ResNet50 (same aggregator) | ABMIL r50 → ABMIL CHIEF | **+0.1681 to +0.2149** | excludes 0 | 0.001 / 0.023 / 0.064 | real effect |
 
 Two different encoders, two different test cohorts, same answer about the aggregator; and
-in the same pipeline the encoder swap is detected at p < 0.02. A pipeline that finds a
-+0.19 effect at p = 0.004 firing *nothing* for a ±0.02 aggregator effect is saying
-something specific, not failing to look.
+in the same pipeline the encoder swap produces an interval that excludes zero in all three
+seeds (McNemar p = 0.001 / 0.023 / 0.064 — the loosest of the three still has an interval
+clearly above zero, which is why the interval, not the p-value, is the primary test here).
+A pipeline that finds a +0.17 to +0.21 effect firing *nothing* for a ±0.03 aggregator
+effect is saying something specific, not failing to look.
 
 ### 5.4 One caution for anyone reading `paired_stats.md` raw
 

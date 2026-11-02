@@ -740,18 +740,19 @@ def render() -> None:
         st.markdown(
             "| run | encoder | n | QWK (own test set) | QWK (50 shared slides) | accuracy |\n"
             "| --- | --- | --- | --- | --- | --- |\n"
-            "| CLAM-SB | CHIEF 768-d | 57 | **0.9224 ± 0.0014** | **0.9298 ± 0.0016** | 0.596 |\n"
-            "| ABMIL | GigaPath 1536-d | 53 | 0.9172 ± 0.0169 | 0.9099 ± 0.0183 | 0.635 |\n"
-            "| ABMIL | CHIEF 768-d | 57 | 0.9124 ± 0.0036 | 0.9182 ± 0.0043 | 0.579 |\n"
+            "| CLAM-SB | CHIEF 768-d | 57 | **0.9207 ± 0.0063** | **0.9278 ± 0.0074** | 0.602 |\n"
+            "| ABMIL | CHIEF 768-d | 57 | 0.9035 ± 0.0145 | 0.9115 ± 0.0110 | 0.561 |\n"
+            "| ABMIL | GigaPath 1536-d | 53 | 0.8984 ± 0.0108 | 0.8907 ± 0.0132 | 0.585 |\n"
             "| TransMIL | ResNet50 1024-d | 60 | 0.7446 ± 0.0364 | 0.7113 ± 0.0583 | 0.483 |\n"
             "| ABMIL | ResNet50 1024-d | 60 | 0.7281 ± 0.0132 | 0.6995 ± 0.0136 | 0.389 |\n"
             "| CLAM-SB, no instance loss | ResNet50 1024-d | 60 | 0.7271 ± 0.0223 | 0.7001 ± 0.0313 | 0.394 |\n"
             "| CLAM-SB + instance loss | ResNet50 1024-d | 60 | 0.7035 ± 0.0088 | 0.6680 ± 0.0110 | 0.383 |"
         )
-        st.info(
-            "**Weights:** ABMIL, TransMIL and both CLAM-SB arms (12 checkpoints) are committed and "
-            "reproducible. The three CHIEF/GigaPath runs ship predictions and metrics but **not** "
-            "weights — see `docs/REPRODUCIBILITY.md`."
+        st.success(
+            "**Weights:** all **21 checkpoints** (7 runs × 3 seeds) are committed, so every row above "
+            "can be reloaded and re-evaluated — not merely re-audited. The three CHIEF/GigaPath runs "
+            "were retrained from the public feature release and reproduce the earlier numbers to "
+            "within 0.019 QWK — see `docs/REPRODUCIBILITY.md`."
         )
 
         # ---- findings ------------------------------------------------- #
@@ -759,18 +760,18 @@ def render() -> None:
         st.subheader("What we found")
         st.markdown(
             "**1. The encoder decides everything.** ABMIL ResNet50 → ABMIL CHIEF is worth "
-            "**+0.18 to +0.21 QWK**, McNemar p = 0.004 / 0.004 / 0.019, every confidence interval "
-            "excluding zero.\n\n"
-            "**2. The aggregator decides nothing detectable.** ABMIL → CLAM-SB is +0.007 to +0.012 "
-            "(CHIEF) and 0.0000 to −0.0114 (ResNet50); ABMIL → TransMIL is −0.011 to +0.031. Every "
-            "interval spans zero, on **two independent encoders**.\n\n"
+            "**+0.17 to +0.21 QWK**, with every paired confidence interval excluding zero across "
+            "three seeds (McNemar p 0.001 / 0.023 / 0.064).\n\n"
+            "**2. The aggregator decides nothing detectable.** ABMIL → CLAM-SB is +0.009 to +0.032 "
+            "(CHIEF) and +0.0000 to −0.0114 (ResNet50); ABMIL → TransMIL is −0.011 to +0.031. No "
+            "paired McNemar test is significant, on **two independent encoders**.\n\n"
             "**3. The instance-loss ablation is a clean negative.** 0.7035 vs 0.7271, but the sign "
             "flips between seeds and no paired test separates the arms. We report *no detectable "
             "effect at n = 60*, not a winner.\n\n"
             "**4. The instance loss diffuses attention** rather than sharpening it: normalised "
             "entropy 0.80 vs 0.70, top-10 attention share 0.34 vs 0.44 — the opposite of the "
             "mechanism CLAM proposes.\n\n"
-            "**5. Accuracy understates this task.** 94–96 % of the foundation-encoder models' errors "
+            "**5. Accuracy understates this task.** 80–95 % of the foundation-encoder models' errors "
             "are exactly one ISUP grade off, which QWK credits and accuracy counts as a total miss."
         )
         st.warning(

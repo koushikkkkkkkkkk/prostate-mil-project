@@ -84,18 +84,18 @@ a **filtering, not a re-split**. Partitions, labels and slide identity are uncha
 
 | model | encoder | n test | QWK | accuracy |
 | --- | --- | --- | --- | --- |
-| ABMIL | CHIEF | 57 | 0.9124 ± 0.0036 | 0.5789 |
-| CLAM-SB + instance | CHIEF | 57 | **0.9224 ± 0.0014** | **0.5965** |
-| ABMIL | GigaPath | 53 | 0.9172 ± 0.0169 | — |
+| ABMIL | CHIEF | 57 | 0.9035 ± 0.0145 | 0.5614 |
+| CLAM-SB + instance | CHIEF | 57 | **0.9207 ± 0.0063** | **0.6023** |
+| ABMIL | GigaPath | 53 | 0.8984 ± 0.0108 | 0.5849 |
 
-Two independent encoders land in the same 0.91–0.92 band, which argues the gain is the
+Two independent encoders land in the same 0.90–0.92 band, which argues the gain is the
 pathology pretraining rather than one encoder's idiosyncrasy.
 
-**Seed stability.** CHIEF's sd (0.0014–0.0036) is 4–10× smaller than ResNet50's
-(0.0092–0.0140): on a better-conditioned feature space the three seeds converge to
-near-identical solutions. GigaPath's larger sd (0.0169) accompanies heavy overfitting —
-training loss falls to ≈0.04 while validation QWK plateaus near 0.85 — which early
-stopping catches (best epochs 10/17/16).
+**Seed stability.** After retraining, CHIEF's sd (0.0063–0.0145) is *comparable* to
+ResNet50's (0.0092–0.0140), not 4–10× smaller: the earlier impression of near-identical
+CHIEF seeds came from the first, uncommitted run and does not survive reproduction.
+GigaPath's sd (0.0108) still accompanies heavy overfitting — training loss falls to ≈0.065
+while validation QWK plateaus near 0.85 — which early stopping catches (best epochs 18/18/12).
 
 ---
 
@@ -108,13 +108,13 @@ table that isolates the encoder as the only changed variable.
 | --- | --- | --- | --- | --- |
 | CLAM-SB | ResNet50 | 57 | 0.6904 ± 0.0098 | 0.3626 |
 | ABMIL | ResNet50 | 57 | 0.7219 ± 0.0149 | 0.3743 |
-| ABMIL | CHIEF | 57 | 0.9124 ± 0.0036 | 0.5789 |
-| **CLAM-SB** | **CHIEF** | 57 | **0.9224 ± 0.0014** | **0.5965** |
+| ABMIL | CHIEF | 57 | 0.9035 ± 0.0145 | 0.5614 |
+| **CLAM-SB** | **CHIEF** | 57 | **0.9207 ± 0.0063** | **0.6023** |
 
 | comparison | Δ QWK | Δ accuracy |
 | --- | --- | --- |
-| ABMIL: ResNet50 → CHIEF | **+0.1905** | +0.2046 |
-| CLAM-SB: ResNet50 → CHIEF | **+0.2320** | +0.2339 |
+| ABMIL: ResNet50 → CHIEF | **+0.1816** | +0.1871 |
+| CLAM-SB: ResNet50 → CHIEF | **+0.2303** | +0.2397 |
 
 Both deltas exceed the seed sd by more than an order of magnitude. Note also that the
 ranking of the two MIL heads **reverses** between families: ABMIL wins on ResNet50
@@ -316,7 +316,7 @@ jupyter nbconvert --to notebook --execute notebooks/06_localization_and_stats.ip
    configuration was selected on test performance.
 2. **Multiple configurations were evaluated on the locked test split** — 8 configurations
    across 3 seeds. With n = 57–60 the multiplicity risk is real; the reported gains
-   (+0.19 to +0.23) are far above the seed sd but a single split cannot rule out split
+   (+0.18 to +0.23) are far above the seed sd but a single split cannot rule out split
    optimism.
 3. **Encoder coverage is incomplete.** Family B numbers come from 53–57 of 60 test slides.
    Only the §4 comparison and the fused row are directly comparable to the locked baseline.

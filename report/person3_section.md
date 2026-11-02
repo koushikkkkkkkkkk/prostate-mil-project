@@ -103,13 +103,13 @@ Every run in the project restricted to the 50 test slides *all* runs cover:
 
 | model | encoder | QWK | accuracy |
 | --- | --- | --- | --- |
-| CLAM-SB | CHIEF | **0.9298 ± 0.0016** | 0.6000 |
-| ABMIL | CHIEF | 0.9182 ± 0.0043 | 0.5800 |
-| ABMIL | GigaPath | 0.9099 ± 0.0183 | 0.6133 |
+| CLAM-SB | CHIEF | **0.9278 ± 0.0074** | 0.6067 |
+| ABMIL | CHIEF | 0.9115 ± 0.0110 | 0.5667 |
+| ABMIL | GigaPath | 0.8907 ± 0.0132 | 0.5667 |
 | **TransMIL** | **ResNet50** | **0.7113 ± 0.0583** | 0.4733 |
 | ABMIL | ResNet50 | 0.6995 ± 0.0136 | 0.3667 |
 
-TransMIL is the best **ResNet50** model on this cohort, and still ~0.20 QWK below every
+TransMIL is the best **ResNet50** model on this cohort, and still ~0.18 QWK below every
 foundation-encoder run.
 
 ---
@@ -145,15 +145,15 @@ It is the third independent test of the same question, and it agrees with the ot
 
 | Aggregator swap (encoder held fixed) | ΔQWK | Verdict |
 | --- | --- | --- |
-| ABMIL → CLAM-SB (CHIEF) | +0.007 … +0.0117 | no detectable effect |
+| ABMIL → CLAM-SB (CHIEF) | +0.009 … +0.0318 | no detectable effect |
 | ABMIL → CLAM-SB ± instance loss (ResNet50) | 0.0000 / −0.0114 | no detectable effect |
 | **ABMIL → TransMIL (ResNet50)** | **−0.0106 … +0.0309** | **no detectable effect** |
-| *Encoder swap (aggregator held fixed)* | **+0.18 … +0.24** | **real, p ≤ 0.02** |
+| *Encoder swap (aggregator held fixed)* | **+0.17 … +0.21** | **real, every CI excludes zero** |
 
 Three aggregators — pooling with gated attention, pooling with instance clustering, and
 full token-level self-attention with positional encoding — move the number by at most
-±0.03 on 60 slides. Replacing ImageNet features with a pathology foundation encoder moves
-it by +0.19 with p = 0.004. That contrast is the paper's central claim, and TransMIL is
+±0.04 on 60 slides. Replacing ImageNet features with a pathology foundation encoder moves
+it by +0.17 to +0.21, with an interval excluding zero in every seed. That contrast is the paper's central claim, and TransMIL is
 what makes it a claim about *MIL architectures* rather than about one architecture.
 
 ---

@@ -4,7 +4,7 @@
 P0-1 and P0-3 were finished by running the ablation on Colab rather than by finding lost
 files; the remaining historical text is kept below as the record of how.
 
-1. **P0-1** — the CLAM-SB / TransMIL weight files were never committed.
+1. **P0-1** — ~~the CLAM-SB / TransMIL weight files were never committed~~ **resolved**: all 21 checkpoints, including the three foundation-encoder runs, are now committed.
 2. **P0-3** — the mandatory instance-loss ablation has no committed artifacts, so the
    two numbers in the report (0.6961 vs 0.7388) are currently unverifiable.
 
@@ -341,7 +341,7 @@ report without a caveat.
 
 > "Our strongest result is a QWK of 0.93 with CLAM-SB on CHIEF features, but the thing we
 > actually established is that the **encoder** decides the outcome: moving from ImageNet
-> ResNet50 to a pathology foundation encoder is worth +0.19 QWK with a McNemar p of 0.004,
+> ResNet50 to a pathology foundation encoder is worth +0.17 to +0.21 QWK with every paired CI excluding zero,
 > while swapping the aggregator — ABMIL, CLAM-SB, TransMIL — moves the number by less than
 > 0.02 with a confidence interval that spans zero. The attention maps are an
 > interpretability cue on 56 of 60 slides, not a segmentation; the masks contain no

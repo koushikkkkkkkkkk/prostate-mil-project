@@ -15,9 +15,9 @@
 
 We ask a deliberately narrow question: **when four weakly supervised MIL architectures are given the same slide-level labels, the same patches and the same split, which design choice actually determines grading accuracy — the aggregator, or the patch encoder?** We train gated-attention ABMIL, CLAM-SB with and without its instance-level clustering loss, and a simplified TransMIL on 420 H&E prostate biopsies from PANDA (70 slides per ISUP grade, Karolinska provider), using frozen patch features from three encoders: ImageNet ResNet50 (1024-d), CHIEF (768-d) and Prov-GigaPath (1536-d). All comparisons are paired on identical slides, with bootstrap confidence intervals on ΔQWK and exact McNemar tests on per-slide correctness.
 
-The result is unambiguous in one direction and null in the other. **Replacing ImageNet features with a pathology foundation encoder raises QWK by +0.18 to +0.24 (McNemar p = 0.004, 0.004, 0.019 across three seeds; every CI excludes zero).** Swapping the aggregator — ABMIL → CLAM-SB, ± instance clustering loss, or ABMIL → TransMIL — changes QWK by at most ±0.03, with **every confidence interval spanning zero**, and the sign of the instance-loss effect flips between seeds. A three-seed ablation of CLAM-SB's instance-level loss gives 0.7035 ± 0.0088 (with) versus 0.7271 ± 0.0223 (without) — a difference we report as *no detectable effect at n = 60*, not as a benefit or a harm. We further show that the instance loss makes attention **more diffuse** rather than sharper (normalised entropy 0.80 vs 0.70), contrary to the mechanism the CLAM paper proposes.
+The result is unambiguous in one direction and null in the other. **Replacing ImageNet features with a pathology foundation encoder raises QWK by +0.17 to +0.21 with the aggregator held fixed (+0.23 when the aggregator changes too); all six paired confidence intervals across three seeds exclude zero, with McNemar p as low as 0.0007.** Swapping the aggregator — ABMIL → CLAM-SB, ± instance clustering loss, or ABMIL → TransMIL — changes QWK by at most ±0.04, no paired McNemar test reaches significance, and the sign of the instance-loss effect flips between seeds. A three-seed ablation of CLAM-SB's instance-level loss gives 0.7035 ± 0.0088 (with) versus 0.7271 ± 0.0223 (without) — a difference we report as *no detectable effect at n = 60*, not as a benefit or a harm. We further show that the instance loss makes attention **more diffuse** rather than sharper (normalised entropy 0.80 vs 0.70), contrary to the mechanism the CLAM paper proposes.
 
-Two secondary findings matter for how such systems should be reported. First, 94–96 % of the foundation-encoder models' errors are exactly one ISUP grade off, so QWK (0.92) and accuracy (0.56–0.68) disagree sharply on the *same predictions* — both must be reported. Second, on this cohort 4 of 60 test slides carry no patch coordinates in the public feature release, so localisation is demonstrable on 56/60 slides and no quantitative localisation score is possible at all. The system is a research prototype on 4 % of PANDA, trained and evaluated on a single provider, and is not a clinical device.
+Two secondary findings matter for how such systems should be reported. First, 80–95 % of the foundation-encoder models' errors are exactly one ISUP grade off, so QWK (0.89–0.93) and accuracy (0.53–0.62) disagree sharply on the *same predictions* — both must be reported. Second, on this cohort 4 of 60 test slides carry no patch coordinates in the public feature release, so localisation is demonstrable on 56/60 slides and no quantitative localisation score is possible at all. The system is a research prototype on 4 % of PANDA, trained and evaluated on a single provider, and is not a clinical device.
 
 ---
 
@@ -38,7 +38,7 @@ Our contribution is an unusual one for a course project: a **controlled comparis
 
 * A reproducible weakly supervised pipeline: locked stratified split, frozen feature bags, four MIL architectures, three encoders, three seeds, all artifacts committed.
 * A **paired statistical protocol** (bootstrap CI on ΔQWK + exact McNemar on discordant slides) applied to every model pair, plus a common-cohort table restricted to the 50 test slides every run covers.
-* The **encoder-versus-aggregator finding**: encoder choice dominates (+0.19, p ≤ 0.02); aggregator choice is undetectable (±0.03, every CI spans zero, on two independent encoders and three aggregators).
+* The **encoder-versus-aggregator finding**: encoder choice dominates (+0.17 to +0.21 with the aggregator held fixed, every paired CI excluding zero); aggregator choice is undetectable (±0.04, no McNemar comparison significant, on two independent encoders and three aggregators).
 * A **clean negative result** for CLAM-SB's instance-level clustering loss, including the observation that the loss diffuses attention rather than sharpening it.
 * An **auditable artifact policy**: `results/ALL_RESULTS.md` is generated from the committed predictions, `scripts/paired_results.py` regenerates every paired table, and `scripts/audit_artifacts.py` reports any result a reviewer could not reproduce. Continuous integration fails the build if the committed tables drift from the artifacts.
 
@@ -139,17 +139,17 @@ AdamW, lr 2e-4 (MIL heads) / 1e-4 (TransMIL), weight decay 1e-5, class-balanced 
 
 ### 5.1 Every run on its own test set
 
-| Run | Encoder | n test | QWK (mean ± sd) | Accuracy | Balanced acc. | Macro F1 |
+| Run | Encoder | n test | QWK (mean ± sd) | Accuracy (mean ± sd) | Bal. acc. (seed 0) | Macro F1 (seed 0) |
 | --- | --- | --- | --- | --- | --- | --- |
-| CLAM-SB | CHIEF | 57 | **0.9224 ± 0.0014** | 0.5965 | 0.6025 | 0.5895 |
-| ABMIL | GigaPath | 53 | **0.9172 ± 0.0169** | 0.6352 | 0.6285 | 0.6246 |
-| ABMIL | CHIEF | 57 | **0.9124 ± 0.0036** | 0.5789 | 0.5864 | 0.5661 |
+| CLAM-SB | CHIEF | 57 | **0.9207 ± 0.0063** | 0.6023 ± 0.0101 | 0.6204 | 0.6013 |
+| ABMIL | CHIEF | 57 | **0.9035 ± 0.0145** | 0.5614 ± 0.0351 | 0.6037 | 0.5785 |
+| ABMIL | GigaPath | 53 | **0.8984 ± 0.0108** | 0.5849 ± 0.0327 | 0.6190 | 0.6036 |
 | TransMIL | ResNet50 | 60 | 0.7446 ± 0.0364 | 0.4833 | 0.4833 | 0.4475 |
 | ABMIL | ResNet50 | 60 | 0.7281 ± 0.0132 | 0.3889 | 0.3889 | 0.3272 |
 | CLAM-SB λ=0 | ResNet50 | 60 | 0.7271 ± 0.0223 | 0.3944 | 0.3944 | 0.3386 |
 | CLAM-SB λ=0.3 | ResNet50 | 60 | 0.7035 ± 0.0088 | 0.3833 | 0.3833 | 0.3142 |
 
-Generated from `results/ALL_RESULTS.md`. **Rows are not mutually comparable** — three different test sets are mixed in this table; that is what §5.2 is for.
+Generated from `results/ALL_RESULTS.md`. QWK and accuracy are three-seed means; balanced accuracy and macro-F1 are reported for seed 0 only. All 21 checkpoints are committed (§10). **Rows are not mutually comparable** — three different test sets are mixed in this table; that is what §5.2 is for.
 
 ### 5.2 The like-for-like table
 
@@ -157,15 +157,15 @@ Restricted to the 50 test slides covered by all seven runs:
 
 | Model | Encoder | QWK | Accuracy |
 | --- | --- | --- | --- |
-| CLAM-SB | CHIEF (768-d) | **0.9298 ± 0.0016** | 0.6000 |
-| ABMIL | CHIEF (768-d) | 0.9182 ± 0.0043 | 0.5800 |
-| ABMIL | GigaPath (1536-d) | 0.9099 ± 0.0183 | 0.6133 |
+| CLAM-SB | CHIEF (768-d) | **0.9278 ± 0.0074** | 0.6067 ± 0.0115 |
+| ABMIL | CHIEF (768-d) | 0.9115 ± 0.0110 | 0.5667 ± 0.0306 |
+| ABMIL | GigaPath (1536-d) | 0.8907 ± 0.0132 | 0.5667 ± 0.0306 |
 | TransMIL | ResNet50 (1024-d) | 0.7113 ± 0.0583 | 0.4733 |
 | CLAM-SB λ=0 | ResNet50 | 0.7001 ± 0.0313 | 0.3733 |
 | ABMIL | ResNet50 | 0.6995 ± 0.0136 | 0.3667 |
 | CLAM-SB λ=0.3 | ResNet50 | 0.6680 ± 0.0110 | 0.3600 |
 
-Two clean bands: 0.91–0.93 for the foundation encoders, 0.67–0.71 for ResNet50. Within each band the differences between aggregators are smaller than the seed-to-seed spread of the band.
+Two clean bands: 0.89–0.93 for the foundation encoders, 0.67–0.71 for ResNet50. Within each band the differences between aggregators are smaller than the seed-to-seed spread of the band.
 
 ### 5.3 The central comparison: encoder versus aggregator
 
@@ -173,17 +173,20 @@ Per-seed paired statistics (`results/metrics/comparison/paired_stats.md`):
 
 | Factor varied | Comparison | ΔQWK per seed | 95 % CI | McNemar p | Verdict |
 | --- | --- | --- | --- | --- | --- |
-| **Encoder** | ABMIL r50 → ABMIL CHIEF | +0.2144 / +0.1920 / +0.1797 | excludes 0 | 0.0042 / 0.0042 / 0.0192 | **real** |
-| **Encoder** | ABMIL r50 → ABMIL GigaPath | +0.2365 / +0.1896 / +0.1852 | excludes 0 | 0.0005 / 0.0266 / 0.0118 | **real** |
-| Encoder (within foundation) | ABMIL CHIEF → ABMIL GigaPath | +0.0081 / −0.0209 / −0.0118 | spans 0 | 0.30 / 1.0 / 1.0 | indistinguishable |
-| **Aggregator** | ABMIL → CLAM-SB (CHIEF) | +0.0073 / +0.0109 / +0.0117 | spans 0 | 0.69 / 1.0 / 1.0 | no detectable effect |
+| **Encoder** | ABMIL r50 → ABMIL CHIEF | +0.2149 / +0.1681 / +0.1762 | excludes 0 | 0.0013 / 0.0225 / 0.0636 | **real** |
+| **Encoder** | ABMIL r50 → ABMIL GigaPath | +0.1872 / +0.1934 / +0.1744 | excludes 0 | 0.0013 / 0.0414 / 0.0963 | **real** |
+| Encoder (within foundation) | ABMIL CHIEF → ABMIL GigaPath | −0.0456 / +0.0027 / −0.0193 | spans 0 | 1.0 / 1.0 / 1.0 | indistinguishable |
+| **Aggregator** | ABMIL → CLAM-SB (CHIEF) | +0.0107 / +0.0318 / +0.0092 | −0.008 to 0.000 | 1.0 / 0.22 / 0.63 | no detectable effect |
 | **Aggregator** | ABMIL → TransMIL (r50) | −0.0106 / +0.0294 / +0.0309 | spans 0 | 0.077 / 0.077 / 1.0 | no detectable effect |
 | **Aggregator** | ABMIL → CLAM-SB λ=0.3 (r50) | 0.0000 / −0.0317 / −0.0419 | spans 0 | 0.63 / 0.63 / 1.0 | no detectable effect |
 | **Aggregator** | ABMIL → CLAM-SB λ=0 (r50) | −0.0114 / +0.0029 / +0.0057 | spans 0 | 0.63 / 1.0 / 1.0 | no detectable effect |
+| **Encoder + aggregator** | ABMIL r50 → CLAM-SB CHIEF | +0.2255 / +0.2000 / +0.1854 | excludes 0 | 0.0007 / 0.0044 / 0.0192 | **real** |
 
-**Encoder effects are 6–10× larger than aggregator effects and are the only effects whose confidence intervals exclude zero.** The same aggregator conclusion holds on two different encoders (CHIEF and ResNet50), which is what distinguishes this from a single lucky pairing.
+**Encoder effects run +0.17 to +0.23; aggregator effects never exceed 0.04.** All six encoder intervals exclude zero; no aggregator interval excludes zero on more than one of three seeds, and no aggregator McNemar test reaches significance. The same aggregator conclusion holds on two different encoders (CHIEF and ResNet50), which is what distinguishes it from a single lucky pairing.
 
-An important corollary: **CHIEF and GigaPath are indistinguishable from each other** (−0.02 to +0.01, CIs spanning zero). The gain comes from *pathology pre-training at all*, not from which foundation model.
+Two of the six encoder McNemar tests cross 0.05 (p = 0.064 for CHIEF seed 2, 0.096 for GigaPath seed 2) even though both intervals exclude zero. At n ≈ 55 exact McNemar has little power, so we treat the bootstrap interval as the primary test and quote the p-values in full rather than reporting only the smallest.
+
+An important corollary: **CHIEF and GigaPath are indistinguishable from each other** (−0.046 to +0.003 on the shared 50 slides, every CI spanning zero, all three McNemar p = 1.0). The gain comes from *pathology pre-training at all*, not from which foundation model. Retraining corroborates this: between the original and the reproduced runs of these same two configurations the ordering **reverses** (GigaPath ahead by 0.005, then CHIEF ahead by 0.005) while the magnitude stays fixed at 0.005. A ranking that flips on retraining at unchanged effect size is what an undetectable difference looks like.
 
 ### 5.4 Why accuracy and QWK disagree so sharply
 
@@ -191,13 +194,13 @@ All five ResNet50/CHIEF/GigaPath runs are evaluated on class-balanced cohorts, s
 
 | Model | Accuracy | QWK | Errors | Off by exactly one grade |
 | --- | --- | --- | --- | --- |
-| CLAM-SB, CHIEF | 0.596 | 0.9236 | 23 / 57 | 22 → **96 %** |
-| ABMIL, CHIEF | 0.561 | 0.9163 | 25 / 57 | 24 → **96 %** |
-| ABMIL, GigaPath | 0.679 | 0.9364 | 17 / 53 | 16 → **94 %** |
+| CLAM-SB, CHIEF | 0.614 | 0.9274 | 22 / 57 | 21 → **95 %** |
+| ABMIL, CHIEF | 0.597 | 0.9168 | 23 / 57 | 21 → **91 %** |
+| ABMIL, GigaPath | 0.623 | 0.8871 | 20 / 53 | 16 → **80 %** |
 | CLAM-SB λ=0.3, r50 | 0.400 | 0.7137 | 36 / 60 | 23 → 64 % |
 | ABMIL, r50 | 0.367 | 0.7137 | 38 / 60 | 20 → 53 % |
 
-The foundation-encoder models make almost no distant errors: when they are wrong, they are wrong by one grade group, which QWK credits as near-correct and accuracy counts as a total miss. Accuracy therefore **understates** ordinal performance on this task, while still being the number a clinician would first ask for. Both belong in any table; neither alone describes the system.
+The foundation-encoder models make mostly near errors: 80–95 % of their mistakes are one grade group off, against 53–64 % for ResNet50, which QWK credits as near-correct and accuracy counts as a total miss. GigaPath's 80 % is its weakest seed (that seed's QWK is 0.887 against 0.908 and 0.900 for the other two), so it understates the typical case rather than overstating it. Accuracy therefore **understates** ordinal performance on this task, while still being the number a clinician would first ask for. Both belong in any table; neither alone describes the system.
 
 ---
 
@@ -296,9 +299,11 @@ Design rule: **the app never invents a number.** If a checkpoint or a feature ba
 | Tier | Runs | Weights | Status |
 | --- | --- | --- | --- |
 | A | ABMIL, TransMIL, CLAM-SB λ=0.3, CLAM-SB λ=0 (12 checkpoints) | committed | fully reproducible |
-| B | ABMIL CHIEF, CLAM-SB CHIEF, ABMIL GigaPath | **not committed** | metrics and predictions committed; models not re-evaluable |
+| A | ABMIL CHIEF, CLAM-SB CHIEF, ABMIL GigaPath (9 checkpoints) | committed | fully reproducible |
 
-Tier B corresponds to the paper's headline numbers. Their predictions, per-seed metrics, training histories and configs are committed, so every statistic in this report can be recomputed and audited — but the models themselves cannot be reloaded. `docs/REPRODUCIBILITY.md` states this explicitly and gives the exact commands to close the gap (three retrains plus two feature downloads, roughly 30 minutes of GPU time).
+All 21 checkpoints ship with the repository, so every row of §5.1 can be reloaded and re-evaluated, not merely re-audited. The two feature sets they depend on are public downloads (`scripts/download_alt_encoder_features.py`), so the full pipeline is reproducible end to end on a single free GPU in well under an hour.
+
+A note on provenance, because it affects how §5.1 should be read. An earlier version of the three foundation-encoder runs had committed predictions and metrics but **no weight files**, so those numbers referred to models nobody could reload. They were retrained from the public feature release on the same manifests and seed list, and the checkpoints committed. The reproduction lands within 0.019 QWK of the original (Δ = −0.009 / −0.002 / −0.019 for ABMIL CHIEF, CLAM-SB CHIEF and ABMIL GigaPath respectively), and **this report quotes the retrained numbers throughout** — no figure in it refers to a model that cannot be loaded. Two consequences are worth stating rather than burying: the seed spread of the foundation runs is wider than the original suggested (sd 0.006–0.015 rather than 0.001–0.004), and the CHIEF-versus-GigaPath ordering reverses between the two sets of runs of those same configurations (§5.3).
 
 Enforcement, on every push (`.github/workflows/tests.yml`): 54 unit and end-to-end tests; `pyflakes` over `src scripts app tests`; a job that regenerates the paired tables and fails if the committed copies differ; and a train/test-leakage check across all four manifests. `scripts/audit_artifacts.py` additionally reports dangling checkpoint references, missing weights, and absent ablation artifacts.
 
@@ -310,16 +315,16 @@ Enforcement, on every push (`.github/workflows/tests.yml`): 54 unit and end-to-e
 2. **Small test set.** 60 slides (50 on the common cohort). Paired CIs are ±0.10 on ΔQWK, so the study can only resolve effects above ≈0.05. Several comparisons here are genuinely inconclusive rather than negative, and are reported as such.
 3. **Three seeds.** Enough to report a mean and sd, not enough to characterise the variance of a 4 M-parameter transformer. TransMIL's sd (0.0364) is the largest in the project.
 4. **Frozen, pre-extracted features.** No encoder fine-tuning, and encoder comparisons inherit any preprocessing differences in the public feature release.
-5. **Three of seven runs lack weights** (§10), including all three headline numbers.
+5. **The foundation-encoder runs were reproduced, not recovered.** Their earlier numbers referred to models whose weights were never committed; the committed runs are a retrain that lands within 0.019 QWK. Seed spread of the retrained foundation runs (sd 0.006–0.015) is larger than the original three suggested.
 6. **No localisation ground truth.** Masks are empty for our provider (§3.3); localisation is qualitative and coverage is 56/60.
-7. **Headline numbers are not re-evaluable** without the Tier-B retrain — quoted with the disclosure in `docs/REPRODUCIBILITY.md`.
+7. **One retrain, not a repeated study.** The reproduction confirms the rank order of encoder and aggregator effects but also flips the CHIEF-versus-GigaPath ordering, which is direct evidence for the "indistinguishable" claim rather than against it — but a third training run would be needed to put an sd on that flip.
 8. **Single instance-loss weight.** λ = 0.30 was fixed from the CLAM paper, not swept; the ablation therefore speaks to *that* weight, not to the loss family.
 
 ---
 
 ## 12. Conclusion and future work
 
-On a controlled comparison of MIL aggregators and patch encoders for ISUP grading, the encoder dominates. Moving from ImageNet ResNet50 to a pathology foundation encoder raises QWK by +0.18 to +0.24 with paired McNemar p ≤ 0.02 across three seeds; moving between gated attention pooling, CLAM's instance-clustered pooling and TransMIL's token-level self-attention changes QWK by at most ±0.03 with every confidence interval spanning zero. CLAM-SB's instance-level clustering loss, the object of our mandatory ablation, produces no detectable grading benefit at λ = 0.30 and makes attention measurably *more* diffuse. These are negative results about architecture and honest positives about representation, and the paired protocol is what allows the two to be distinguished.
+On a controlled comparison of MIL aggregators and patch encoders for ISUP grading, the encoder dominates. Moving from ImageNet ResNet50 to a pathology foundation encoder raises QWK by +0.17 to +0.23 with every paired confidence interval excluding zero across three seeds; moving between gated attention pooling, CLAM's instance-clustered pooling and TransMIL's token-level self-attention changes QWK by at most ±0.04, never with a significant McNemar test. CLAM-SB's instance-level clustering loss, the object of our mandatory ablation, produces no detectable grading benefit at λ = 0.30 and makes attention measurably *more* diffuse. These are negative results about architecture and honest positives about representation, and the paired protocol is what allows the two to be distinguished.
 
 Highest-value next steps, in order:
 

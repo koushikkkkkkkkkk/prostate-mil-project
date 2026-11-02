@@ -88,7 +88,7 @@ The scalar $a_n$ directly measures how critical patch $n$ was in driving the dia
   * Mean QWK: **$0.7281 \pm 0.0132$** (Seed 0: 0.7137, Seed 1: 0.7308, Seed 2: 0.7397)
   * Test Accuracy: **$38.89\%$** | Macro F1: **$0.3272$**
 * **CHIEF Foundation Backbone (3 Seeds):**
-  * Mean QWK: **$0.9124 \pm 0.0036$** (Seed 0: 0.9163, Seed 1: 0.9119, Seed 2: 0.9092)
+  * Mean QWK: **$0.9035 \pm 0.0145$** (Seed 0: 0.9168, Seed 1: 0.8880, Seed 2: 0.9056)
   * Test Accuracy: **$57.89\%$** | Macro F1: **$0.5661$**
 
 ---
@@ -293,9 +293,9 @@ prediction CSVs by `scripts/paired_results.py`).
 
 | model | encoder | n | QWK | accuracy |
 | --- | --- | --- | --- | --- |
-| CLAM-SB | CHIEF ($D{=}768$) | 50 | **$0.9298 \pm 0.0016$** | 0.6000 |
-| ABMIL | CHIEF ($D{=}768$) | 50 | $0.9182 \pm 0.0043$ | 0.5800 |
-| ABMIL | GigaPath ($D{=}1536$) | 50 | $0.9099 \pm 0.0183$ | 0.6133 |
+| CLAM-SB | CHIEF ($D{=}768$) | 50 | **$0.9278 \pm 0.0074$** | 0.6067 |
+| ABMIL | CHIEF ($D{=}768$) | 50 | $0.9115 \pm 0.0110$ | 0.5667 |
+| ABMIL | GigaPath ($D{=}1536$) | 50 | $0.8907 \pm 0.0132$ | 0.5667 |
 | TransMIL | ResNet50 ($D{=}1024$) | 50 | $0.7113 \pm 0.0583$ | 0.4733 |
 | ABMIL | ResNet50 ($D{=}1024$) | 50 | $0.6995 \pm 0.0136$ | 0.3667 |
 
@@ -311,7 +311,7 @@ Paired per-seed statistics (`paired_stats.md`):
 > [!IMPORTANT]
 > **Key Takeaway:** The decisive factor is the **biological fidelity of the tile
 > representation**, not the aggregator. Swapping ImageNet ResNet50 for a pathology
-> foundation encoder is worth $\approx +0.19$ QWK with a McNemar p of 0.004; swapping
+> foundation encoder is worth $\approx +0.18$ QWK with a McNemar p of 0.001; swapping
 > ABMIL for CLAM-SB or TransMIL is worth $\le 0.02$ with a confidence interval spanning
 > zero at $n=50$–$60$. Report "no detectable difference", never "equivalent".
 
@@ -361,5 +361,5 @@ Deep MIL networks are often perceived as black boxes. The statistical ordinal ba
 | **CLAM-SB ($\lambda=0$)** | ResNet50 (1024-d) | ImageNet-1k | $0.7271 \pm 0.0223$ | $39.44\%$ | $0.3386$ | Higher mean, higher variance | Does not leverage clustering |
 | **TransMIL** | ResNet50 (1024-d) | ImageNet-1k | $0.7446 \pm 0.0364$ | $48.33\%$ | $0.4475$ | Correlated spatial tokens via PPEG| Quadratic attention VRAM cost |
 | **Ordinal Logistic** | Feature Stats ($x_{\text{stat}}$)| ImageNet-1k | $0.7399$ (single fit)| $36.67\%$ | $0.3255$ | Native ordinal ranking loss | No spatial localization heatmaps |
-| **ABMIL + CHIEF** | CHIEF (768-d) | 15M Pathology Tiles | **$0.9124 \pm 0.0036$** | **$57.89\%$** | **$0.5661$** | **Pathology foundation representation** | Requires foundation weights (~1 GB) |
-| **ABMIL + GigaPath** | Prov-GigaPath (1536-d)| 1.3B Pathology Tiles | **$0.9172 \pm 0.0041$** | **$58.12\%$** | **$0.5702$** | Ultra-large context representation| 1536-d high memory footprint |
+| **ABMIL + CHIEF** | CHIEF (768-d) | 15M Pathology Tiles | **$0.9035 \pm 0.0145$** | **$56.14\%$** | **$0.5785$** | **Pathology foundation representation** | Requires foundation weights (~1 GB) |
+| **ABMIL + GigaPath** | Prov-GigaPath (1536-d)| 1.3B Pathology Tiles | **$0.8984 \pm 0.0108$** | **$58.49\%$** | **$0.6036$** | Ultra-large context representation| 1536-d high memory footprint |
