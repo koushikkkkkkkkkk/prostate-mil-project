@@ -56,6 +56,8 @@ from src.evaluate import (  # noqa: E402
 
 #: human-readable encoder label per result folder (falls back to the folder name)
 ENCODER_LABELS = {
+    "clam_sb/with_instance": "ResNet50 (1024-d)",
+    "clam_sb/without_instance": "ResNet50 (1024-d)",
     "abmil": "ResNet50 (1024-d)",
     "transmil": "ResNet50 (1024-d)",
     "abmil_chief": "CHIEF (768-d)",
@@ -64,6 +66,8 @@ ENCODER_LABELS = {
 }
 
 MODEL_LABELS = {
+    "clam_sb/with_instance": "CLAM-SB + instance loss",
+    "clam_sb/without_instance": "CLAM-SB, no instance loss",
     "abmil": "ABMIL",
     "transmil": "TransMIL",
     "abmil_chief": "ABMIL",
@@ -96,13 +100,23 @@ def load_run(run_dir: Path) -> Dict[int, Dict[str, Tuple[int, int]]]:
 
 
 def discover_runs(results: Path) -> Dict[str, Dict[int, Dict[str, Tuple[int, int]]]]:
+    """Every folder under results/metrics that holds prediction CSVs.
+
+    Searched **recursively**: a run can be nested one level down (the CLAM-SB
+    ablation writes ``clam_sb/with_instance/`` and ``clam_sb/without_instance/``),
+    and a one-level scan silently drops those arms from every table. Keys are
+    paths relative to ``results/metrics`` with forward slashes, so a top-level run
+    keeps its old name ("abmil") and a nested arm reads "clam_sb/with_instance".
+    """
     runs: Dict[str, Dict[int, Dict[str, Tuple[int, int]]]] = {}
-    for run_dir in sorted((results / "metrics").iterdir()):
+    metrics_root = results / "metrics"
+    candidates = sorted({p.parent for p in metrics_root.rglob("predictions_*_seed*.csv")})
+    for run_dir in candidates:
         if not run_dir.is_dir():
             continue
         seeds = load_run(run_dir)
         if seeds:
-            runs[run_dir.name] = seeds
+            runs[str(run_dir.relative_to(metrics_root)).replace("\\", "/")] = seeds
     return runs
 
 

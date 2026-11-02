@@ -51,17 +51,21 @@ def mean_sd(payload: Optional[Dict[str, Any]], key: str) -> str:
     return "—"
 
 
+def run_config_for(run_dir: Path) -> Dict[str, Any]:
+    """run_config.json for a run, looking one level up for nested ablation arms."""
+    for candidate in (run_dir / "run_config.json", run_dir.parent / "run_config.json"):
+        config = load_json(candidate)
+        if config:
+            return config
+    return {}
+
+
 def checkpoint_state(run_dir: Path) -> str:
     """Are the weights for this run actually in the repo?"""
     checkpoints = sorted(run_dir.glob("checkpoints/*.pt")) + sorted(run_dir.glob("*.pt"))
     if checkpoints:
         return f"✅ {len(checkpoints)}"
-    config = load_json(run_dir / "run_config.json") or {}
-    model = str(config.get("model", "?")).lower()
-    candidates = [
-        ROOT / "results" / "metrics" / model / "checkpoints",
-        ROOT / "results" / "metrics" / f"{model}_chief" / "checkpoints",
-    ]
+    candidates = [run_dir / "checkpoints", run_dir] + sorted(run_dir.glob("*/checkpoints"))
     for candidate in candidates:
         if candidate.is_dir() and list(candidate.glob("*.pt")):
             return "❌ (not this run)"
@@ -73,18 +77,17 @@ def checkpoint_state(run_dir: Path) -> str:
 # --------------------------------------------------------------------------- #
 def collect_runs(results: Path) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
-    for run_dir in sorted((results / "metrics").iterdir()):
-        if not run_dir.is_dir():
-            continue
-        aggregates = sorted(run_dir.glob("aggregate_*.json"))
-        if not aggregates:
-            continue
-        aggregate = load_json(aggregates[0]) or {}
-        config = load_json(run_dir / "run_config.json") or {}
+    metrics_root = results / "metrics"
+    # recursive: the CLAM-SB ablation lives at clam_sb/with_instance/ etc., and a
+    # one-level scan would leave both arms out of the results table entirely
+    for aggregate_path in sorted(metrics_root.rglob("aggregate_*.json")):
+        run_dir = aggregate_path.parent
+        aggregate = load_json(aggregate_path) or {}
+        config = run_config_for(run_dir)
         model_config = config.get("model_config", {}) or {}
         rows.append(
             {
-                "run": run_dir.name,
+                "run": str(run_dir.relative_to(metrics_root)).replace("\\", "/"),
                 "model": config.get("model", run_dir.name),
                 "in_dim": model_config.get("in_dim", "?"),
                 "manifest": Path(str(config.get("manifest", "?"))).name,
