@@ -51,20 +51,57 @@ Test set ($n = 60$ slides), evaluated across seeds 0, 1, and 2:
 ### Key Observations:
 1. **High Ordinal Concordance (QWK ~0.73):** Despite raw accuracy being ~39%, QWK is strong because errors land on immediately adjacent Gleason grades (e.g. predicting ISUP 2 instead of ISUP 3), which incur only minor quadratic penalties ($1/25 = 0.04$).
 2. **Stable Convergence:** Across all 3 seeds, the gated attention model cleanly plateaued and early-stopped between epochs 18 and 24, avoiding severe overfitting on the 300 training bags.
-3. **Independent Replication:** Teammate Himesh independently re-executed `notebooks/03_abmil_training.ipynb` on Google Colab GPU, obtaining identical metrics (merged in PR #2).
+3. **Determinism:** the three seeds are committed with their configs, so any teammate can
+   reproduce these numbers with
+   `python -m src.train --model abmil --seeds 0 1 2`. Reproduction is a one-command
+   operation on the public feature release — see `docs/REPRODUCIBILITY.md`.
 
 ---
 
 ## 4. Attention Attribution & Sanity Checks
 
-Evaluating attention weights across test biopsies demonstrates that the model learns selective sparsity:
-* Benign stroma and empty slide regions receive negligible attention ($a_j \approx 0$).
-* Neoplastic glandular clusters receive the vast majority of attention mass, enabling interpretability without pixel supervision.
-* Mean attention entropy is $0.7245$ (normalised), confirming sharp localization compared to unweighted mean pooling.
+Attention weights are exported for all 420 slides and summarised in
+`results/ALL_RESULTS.md` §5. What they actually show:
+
+| measure | ABMIL (r50) | CLAM-SB (+ instance loss) |
+| :--- | :---: | :---: |
+| mean normalised attention entropy | 0.7245 | 0.8003 |
+| top-10 attention share | 0.4005 | 0.3432 |
+
+Read this honestly: **normalised entropy of 0.72 is diffuse, not sharp.** With ~1000+
+patches per slide, attention mass is spread across a large fraction of the bag, and the
+top 10 patches hold 40% of the weight. ABMIL is more concentrated than CLAM-SB
+(0.72 vs 0.80), but neither produces the near-one-hot attention a "the model found the
+tumour" claim would require.
+
+Three consequences to keep in the write-up:
+
+* The maps are an **interpretability cue**, not a segmentation. No quantitative
+  localisation score is possible: the feature release has no slide thumbnails and no
+  tissue masks (see §5 and `results/heatmaps/*/export_summary.json`, where
+  `"localisation": {"available": false}`).
+* The claim "benign stroma receives negligible attention, neoplastic glands receive the
+  vast majority" was **not measured** and has been removed. Establishing it would need
+  patch-level labels, which PANDA does not provide for Karolinska slides.
+* Attention exports exist for **56 of 60 test slides** — four test slides have no patch
+  coordinates in the feature release, so they can be graded but not placed on a canvas.
 
 ---
 
-## 5. Artifacts & Deliverables
+## 5. Limitations
+
+* **One provider.** All 420 slides are Karolinska; there are no Radboud slides, so no
+  provider-shift estimate is possible.
+* **4% of PANDA.** The subset is stratified (70 slides per ISUP grade) rather than
+  reflecting PANDA's real class balance, so accuracy on this split is not an estimate of
+  accuracy on the full cohort.
+* **Adjacent-grade confusion dominates** the error budget: 53% of ABMIL's test errors are
+  off by exactly one grade. Report QWK and accuracy together, always.
+* **Masks are unusable for supervision.** The public Karolinska label masks contain no
+  Gleason pixels (reproducible with `scripts/check_mask_encoding.py`), which is why no
+  patch-level model is trained on real data.
+
+## 6. Artifacts & Deliverables
 
 All outputs are committed under `results/metrics/abmil/`:
 * Prediction CSVs with slide IDs, ground truth, predicted grades, and probabilities: `predictions_abmil_seed{0,1,2}.csv`

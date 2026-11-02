@@ -9,7 +9,7 @@ can **re-evaluate** the committed predictions and **re-run** the training, and l
 same numbers. A run whose weights are missing is *not* reproducible — its metrics are
 reported, but nobody can interrogate them.
 
-## The five trained families
+## The seven trained runs
 
 | run | encoder | weights in repo | features | status |
 | --- | --- | --- | --- | --- |
@@ -17,9 +17,9 @@ reported, but nobody can interrogate them.
 | `transmil` (3 seeds) | ResNet50 1024-d | ✅ committed | public download | **fully reproducible** |
 | `clam_sb/with_instance` (3 seeds) | ResNet50 1024-d | ✅ committed | public download | **fully reproducible** |
 | `clam_sb/without_instance` (3 seeds) | ResNet50 1024-d | ✅ committed | public download | **fully reproducible** |
-| `abmil_chief` (3 seeds) | CHIEF 768-d | ❌ not committed | public download | **metrics only** |
-| `clam_sb_chief` (3 seeds) | CHIEF 768-d | ❌ not committed | public download | **metrics only** |
-| `abmil_gigap` (3 seeds) | GigaPath 1536-d | ❌ not committed | public download | **metrics only** |
+| `abmil_chief` (3 seeds) | CHIEF 768-d | ✅ committed | public download | **fully reproducible** |
+| `clam_sb_chief` (3 seeds) | CHIEF 768-d | ✅ committed | public download | **fully reproducible** |
+| `abmil_gigap` (3 seeds) | GigaPath 1536-d | ✅ committed | public download | **fully reproducible** |
 
 Reproduce everything on the ResNet50 cohort from a clean clone:
 
@@ -32,32 +32,40 @@ python scripts/summarize_results.py && python scripts/paired_results.py
 python scripts/audit_artifacts.py                       # must be 0 fatal
 ```
 
-## The three foundation-encoder runs: an honest statement
+## The three foundation-encoder runs: retrained and committed
 
 `abmil_chief`, `clam_sb_chief` and `abmil_gigap` carry the project's headline numbers
-(QWK 0.9124 / 0.9224 / 0.9172). **Their weights were never committed and no longer exist
-on the authors' machines.** Their per-seed predictions, metrics, histories and configs *are*
-committed, so every statistic in the report can be recomputed and audited — but the models
-cannot be re-evaluated or probed.
+(QWK 0.9207 / 0.9035 / 0.8984). An earlier version of these runs shipped predictions and
+metrics but **no weights**, so their statistics could be audited but the models themselves
+could not be reloaded. They have since been retrained from the public feature release on the
+same manifests and the same seed list (0/1/2), and the checkpoints committed — 9 files of
+~3 MB each, bringing the repository to **21 checkpoints**.
 
-Say it plainly in the report; do not let a reviewer discover it:
+The reproduction lands within 0.019 QWK of the original numbers (Δ = −0.002 / −0.009 /
+−0.019 for CLAM-SB CHIEF, ABMIL CHIEF and ABMIL GigaPath). **Every document in this
+repository quotes the retrained numbers**, so no figure anywhere refers to a model that
+cannot be loaded. That is also why numbers memorised from an earlier draft no longer appear
+in any file.
 
-> The CHIEF and GigaPath runs are reported from committed predictions and metrics, not from
-> committed weights. Their training occupies a few minutes of GPU time per seed and can be
-> reproduced exactly from the public feature release with the commands below, but as of this
-> submission they have not been re-run.
+Two consequences are stated rather than buried:
 
-To close the gap (one Colab session, ~30 min):
+* the foundation runs' seed spread is wider than the first run suggested (sd 0.006–0.015,
+  previously 0.001–0.004), which matters because it is the yardstick for claiming aggregator
+  differences of ±0.03 are undetectable;
+* the CHIEF-versus-GigaPath ordering **reverses** between the two sets of runs of those same
+  configurations, at constant magnitude — evidence *for* "indistinguishable", not against it.
+
+Commands used (one Colab T4 session, ~40 minutes end to end):
 
 ```bash
-python scripts/download_alt_encoder_features.py --encoder chief    # 768-d, ~700 MB
-python scripts/download_alt_encoder_features.py --encoder gigap    # 1536-d, ~900 MB
-python scripts/verify_data.py --require all                        # all four cohorts OK
+python scripts/download_alt_encoder_features.py --encoder chief --workers 16   # 399 slide bags
+python scripts/download_alt_encoder_features.py --encoder gigap --workers 16   # 391 slide bags
+python scripts/verify_data.py --require all
 
 python -m src.train --model abmil   --manifest data/common_split_chief.csv \
     --features-root data/features_chief --config configs/abmil_chief.yaml \
     --out-dir results/metrics/abmil_chief  --seeds 0 1 2
-python -m src.train_clam_sb --manifest data/common_split_chief.csv \
+python -m src.train --model clam_sb --manifest data/common_split_chief.csv \
     --features-root data/features_chief --config configs/clam_sb_chief.yaml \
     --out-dir results/metrics/clam_sb_chief --seeds 0 1 2
 python -m src.train --model abmil   --manifest data/common_split_gigap.csv \
@@ -65,8 +73,18 @@ python -m src.train --model abmil   --manifest data/common_split_gigap.csv \
     --out-dir results/metrics/abmil_gigap --seeds 0 1 2
 ```
 
-Then commit `results/metrics/{abmil_chief,clam_sb_chief,abmil_gigap}/checkpoints/*.pt`
-(~3 MB each, 9 files) and `audit_artifacts.py` reaches **0 fatal, 0 warnings**.
+Use `--model clam_sb` through `src.train`, **not** `src.train_clam_sb`: the latter writes the
+nested `with_instance/` layout, whereas `clam_sb_chief` is a flat run directory like every
+other run in `results/metrics/`.
+
+After committing the new run directories, regenerate the derived tables so the committed
+copies match the artifacts:
+
+```bash
+python scripts/summarize_results.py
+python scripts/paired_results.py
+python scripts/audit_artifacts.py     # expect 0 fatal, 0 warnings
+```
 
 ## What is already enforced automatically
 

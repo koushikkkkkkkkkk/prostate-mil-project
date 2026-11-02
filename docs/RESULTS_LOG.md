@@ -39,9 +39,9 @@ Restricted to the slides **every** run covers, so the rows are directly comparab
 
 | model | encoder | n | QWK | accuracy |
 | --- | --- | --- | --- | --- |
-| CLAM-SB | CHIEF (768-d) | 50 | **0.9298 ± 0.0016** | 0.6000 |
-| ABMIL | CHIEF (768-d) | 50 | 0.9182 ± 0.0043 | 0.5800 |
-| ABMIL | GigaPath (1536-d) | 50 | 0.9099 ± 0.0183 | 0.6133 |
+| CLAM-SB | CHIEF (768-d) | 50 | **0.9278 ± 0.0074** | 0.6067 |
+| ABMIL | CHIEF (768-d) | 50 | 0.9115 ± 0.0110 | 0.5667 |
+| ABMIL | GigaPath (1536-d) | 50 | 0.8907 ± 0.0132 | 0.5667 |
 | TransMIL | ResNet50 (1024-d) | 50 | 0.7113 ± 0.0583 | 0.4733 |
 | ABMIL | ResNet50 (1024-d) | 50 | 0.6995 ± 0.0136 | 0.3667 |
 
@@ -62,8 +62,8 @@ Because the CI spans zero, write "no detectable difference", never "equivalent".
 See `results/ALL_RESULTS.md` §1 (with provenance and a *weights in repo* column).
 Summary: ABMIL r50 0.7281 ± 0.0132 (60) · CLAM-SB r50 0.7035 ± 0.0088 with instance loss,
 0.7271 ± 0.0223 without (60)
-· TransMIL r50 0.7446 ± 0.0364 (60) · ABMIL CHIEF 0.9124 ± 0.0036 (57) · CLAM-SB
-CHIEF 0.9224 ± 0.0014 (57) · ABMIL GigaPath 0.9172 ± 0.0169 (53).
+· TransMIL r50 0.7446 ± 0.0364 (60) · CLAM-SB CHIEF 0.9207 ± 0.0063 (57) · ABMIL
+CHIEF 0.9035 ± 0.0145 (57) · ABMIL GigaPath 0.8984 ± 0.0108 (53).
 
 ## Ablation: CLAM-SB with vs without instance loss — **run and committed 2 Nov 2026**
 

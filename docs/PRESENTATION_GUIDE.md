@@ -270,7 +270,7 @@ flowchart TD
 
 ### 2. Presentation Talking Points for Person 4
 * *"My role was translation and verification: proving our results with statistical rigor and creating an interactive interface where clinicians can explore model predictions."*
-* *"Our ordinal logistic regression reaches 0.7399, slightly above ABMIL at 0.7281 on the same slides: an explicit ordinal head buys a small amount, but nowhere near the +0.19 that a pathology foundation encoder buys. Deep MIL's advantage is localisation, not raw grading."*
+* *"Our ordinal logistic regression reaches 0.7399, slightly above ABMIL at 0.7281 on the same slides: an explicit ordinal head buys a small amount, but nowhere near the +0.18 that a pathology foundation encoder buys. Deep MIL's advantage is localisation, not raw grading."*
 * *"Our Streamlit app gives pathologists full transparency: not just an ISUP grade, but an interactive attention heatmap showing exactly which glandular patterns drove the prediction."*
 
 ---
