@@ -1,8 +1,9 @@
 # Results log
 
-> **Which of these runs can a reviewer actually reproduce?** See
-> [`docs/REPRODUCIBILITY.md`](REPRODUCIBILITY.md): four ResNet50 families ship their weights,
-> the three foundation-encoder runs ship metrics and predictions but not weights.
+> **Which of these runs can a reviewer actually reproduce?** All of them. See
+> [`docs/REPRODUCIBILITY.md`](REPRODUCIBILITY.md): all seven runs ship their weights
+> (21 checkpoints), including the three foundation-encoder runs that carry the headline
+> numbers.
 
 
 **This file is a pointer, not a data source.** Every number lives in

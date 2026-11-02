@@ -12,7 +12,7 @@ Everything else is done. Total remaining work: **about two hours, one person, on
 
 | # | item | state | where |
 | --- | --- | --- | --- |
-| P0-1 | track the missing seed checkpoints | **done** — 12 `_best.pt` | Part B, plus the ablation run |
+| P0-1 | track the missing seed checkpoints | **done** — 21 `_best.pt` | Part B, plus the ablation run |
 | P0-2 | fix the sample app | **done** | commit `d004422`, `app/streamlit_app.py` |
 | P0-3 | run + commit the CLAM-SB ablation | **done** — 0.7035 / 0.7271 | `results/metrics/clam_sb/`, commit `eda3401` |
 | P1-4 | generated results table, no hand-typed numbers | **done** | `results/ALL_RESULTS.md`, `docs/RESULTS_LOG.md` |
@@ -99,6 +99,10 @@ If the test count is not 54, or the audit prints no fatal findings, the merge is
 
 ## Part B — P0-1: commit the nine checkpoints (30 minutes)
 
+> **Closed 2 Nov 2026 — 21 checkpoints are committed, not 9.** This part is kept as a record
+> of the procedure. The counts in it ("expect 3 today", "the nine checkpoints") describe the
+> repository *before* the foundation-encoder retrain; the acceptance bar of ≥ 9 was exceeded.
+
 ### B1. Find out what you already have (2 min)
 
 ```powershell
@@ -124,8 +128,8 @@ audit verdict depends on those paths existing.
 | --- | --- | --- |
 | CLAM-SB seed 0/1/2, **with** instance loss | `results/metrics/clam_sb/with_instance/checkpoints/clam_sb_seed{0,1,2}_best.pt` | `results/heatmaps/clam_sb/export_summary.json` and `results/metrics/attention/clam_sb/export_summary.json` already reference seed 0 — **this is the dangling reference the audit fails on** |
 | CLAM-SB seed 0/1/2, **without** instance loss | `results/metrics/clam_sb/without_instance/checkpoints/clam_sb_seed{0,1,2}_best.pt` | the ablation's second arm; without it the 0.7388 row is a number with no weight behind it |
-| TransMIL seed 0/1/2 | `results/metrics/transmil/checkpoints/transmil_seed{0,1,2}_best.pt` | 0.7446 is in the generated table with no weights |
-| CHIEF / GigaPath runs | `results/metrics/{abmil_chief,clam_sb_chief,abmil_gigap}/checkpoints/…_seed{n}_best.pt` | 0.91–0.93 QWK, the headline result, currently unreproducible |
+| TransMIL seed 0/1/2 | `results/metrics/transmil/checkpoints/transmil_seed{0,1,2}_best.pt` | 0.7446 was in the generated table with no weights (now committed) |
+| CHIEF / GigaPath runs | `results/metrics/{abmil_chief,clam_sb_chief,abmil_gigap}/checkpoints/…_seed{n}_best.pt` | 0.91–0.93 QWK, the headline result — unreproducible at the time, retrained and committed since |
 
 Today the repository tracks **three** `_best.pt` files — ABMIL seeds 0/1/2. The six
 CLAM-SB arm checkpoints bring the count to exactly **9**, which is the acceptance bar

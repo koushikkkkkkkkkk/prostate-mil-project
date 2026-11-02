@@ -97,7 +97,12 @@ Requires **Python 3.10 – 3.13** (verified: 3.13 + torch 2.15 + numpy 2.3). On 
 | run | weights committed | status |
 | --- | --- | --- |
 | ABMIL, TransMIL, CLAM-SB (both ablation arms) — ResNet50 1024-d | ✅ 12 `_best.pt` | fully reproducible |
-| ABMIL/CLAM-SB on CHIEF, ABMIL on GigaPath | ❌ | metrics + predictions committed, weights not — see [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) for the exact retrain commands |
+| ABMIL + CLAM-SB on CHIEF, ABMIL on GigaPath — 768-d / 1536-d | ✅ 9 `_best.pt` | fully reproducible |
+
+**All seven runs ship their weights — 21 checkpoints in total**, including the three
+foundation-encoder runs that carry the headline numbers. Those three were retrained from the
+public feature release and reproduce the earlier figures to within 0.019 QWK; the provenance
+note in [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) records the delta.
 
 One command audits this and every other artifact claim in the repo:
 
