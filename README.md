@@ -30,12 +30,13 @@ only**, and produces attention heatmaps that localise suspicious regions.
 | **CLAM-SB attention heatmaps + localisation score** | **Person 2** | `src/export_clam_attention.py`, `src/heatmaps.py` | ✅ implemented |
 | **Paired ABMIL-vs-CLAM-SB statistics** | **Person 2** | `src/compare_clam_abmil.py` | ✅ implemented |
 | Simplified TransMIL (PPEG + CLS) | Person 3 | `src/models/transmil.py` | ✅ implemented, tested |
-| Patch CNN + ordinal/XGBoost baselines | Person 4 | `src/models/patch_cnn.py`, `src/statistical_models.py` | ✅ implemented (patch CNN needs patch labels) |
+| Patch CNN | Person 4 | `src/models/patch_cnn.py` | ⚠️ implemented + demo only (`results/metrics/patch_cnn_demo/NOT_REPORTABLE.md`) — PANDA has no patch labels |
+| Ordinal logistic baseline | Person 4 | `src/statistical_models.py` | ✅ trained (consumes MIL attention stats) |
 | Metrics: QWK, bootstrap CI, McNemar, overlap | Person 4 | `src/evaluate.py` | ✅ implemented |
 | Streamlit demo | Person 4 | `app/streamlit_app.py` | ✅ implemented |
 | Shared trainer (all models, 3 seeds) | Person 1 | `src/train.py` | ✅ implemented |
 | Notebooks 01-06 | everyone | `notebooks/` | ✅ 04 is complete; 01-03/05-06 are runnable starters |
-| **Real PANDA results** | Person 1 | `results/metrics/` | ⛔ blocked on the PANDA download + feature extraction |
+| **Real PANDA results** | everyone | `results/metrics/` | ✅ trained and committed (see `results/ALL_RESULTS.md`); feature bags are downloaded separately via `scripts/verify_data.py` |
 
 Everything above except the last row can be exercised **today** on synthetic data.
 No number produced on synthetic data may be reported — see `docs/RESULTS_LOG.md`.
@@ -85,6 +86,46 @@ python scripts/check_env.py    # versions + broken-combination detector, run thi
 Requires **Python 3.10 – 3.13** (verified: 3.13 + torch 2.15 + numpy 2.3). On 3.14 keep
 `numpy>=2.0` — numpy 1.x is broken there.
 
+### 3-BIS. Get the data (features are NOT in the repo -- by design)
+
+GitHub rejects files over 100 MB and the feature release is ~600 MB per encoder, so
+`data/features*/` is gitignored and lives outside git. Source for every encoder is the
+Hugging Face dataset **`Dearcat/CPathPatchFeature`**, under `panda/{encoder}/pt_files/`.
+
+| cohort | encoder | feature dim | manifest | rows | slides with features | locate as |
+| --- | --- | --- | --- | --- | --- | --- |
+| ResNet50 | `r50` | 1024 | `data/common_split.csv` | 420 | 420 | `data/features/` |
+| CHIEF | `chief` | 768 | `data/common_split_chief.csv` | 399 | 399 | `data/features_chief/` |
+| GigaPath | `gigap` | 1536 | `data/common_split_gigap.csv` | 391 | 391 | `data/features_gigap/` |
+| coords subset | `r50` | 1024 | `data/common_split_with_coords.csv` | 399 | 399 (+ 399 with coords) | `data/features/` |
+
+Download each cohort into the folder above (roughly 600--900 MB per encoder,
+~2 GB for all three):
+
+```bash
+# ResNet50 features + patch coordinates (needed by every heatmap step)
+python scripts/download_features_and_coords.py --manifest data/common_split.csv --out-dir data/features
+
+# pathology foundation-model encoders
+python scripts/download_alt_encoder_features.py --encoder chief     # -> data/features_chief
+python scripts/download_alt_encoder_features.py --encoder gigap     # -> data/features_gigap
+```
+
+Then **verify before training** -- this is the check that catches a half-finished
+download, a wrong folder or a dimension mismatch:
+
+```bash
+python scripts/verify_data.py            # table of rows / present / missing / dim / coords
+python scripts/verify_data.py --require all   # exit 1 on any gap (use in CI)
+```
+
+Expected on a healthy checkout: every cohort `ok`, `missing = 0`, dims 1024 / 768 / 1536.
+
+> **Coordinate gap (known, documented):** 21 of the 420 slides have no patch
+> coordinates in the release, so their `coords` are absent. Training and evaluation
+> use all 420; heatmaps cover **56/60** test slides. See
+> `results/metrics/coord_coverage.csv`.
+
 ### 3a. Before Person 1's real features exist (synthetic, ~1 minute)
 
 ```bash
@@ -120,7 +161,7 @@ streamlit run app/streamlit_app.py
 ### 3c. Tests
 
 ```bash
-python -m unittest discover -s tests -v       # 21 tests, ~30 s, CPU only
+python -m unittest discover -s tests -v       # 54 tests, ~50 s, CPU only
 ```
 
 ---
