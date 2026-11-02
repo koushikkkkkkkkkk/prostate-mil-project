@@ -1,5 +1,10 @@
 # Results log
 
+> **Which of these runs can a reviewer actually reproduce?** See
+> [`docs/REPRODUCIBILITY.md`](REPRODUCIBILITY.md): four ResNet50 families ship their weights,
+> the three foundation-encoder runs ship metrics and predictions but not weights.
+
+
 **This file is a pointer, not a data source.** Every number lives in
 `results/ALL_RESULTS.md`, which is *generated* from the artifacts by
 `python scripts/summarize_results.py`. Tables typed by hand drifted from the

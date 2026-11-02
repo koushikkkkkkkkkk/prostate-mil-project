@@ -86,7 +86,20 @@ python scripts/check_env.py    # versions + broken-combination detector, run thi
 Requires **Python 3.10 – 3.13** (verified: 3.13 + torch 2.15 + numpy 2.3). On 3.14 keep
 `numpy>=2.0` — numpy 1.x is broken there.
 
-### 3-BIS. Get the data (features are NOT in the repo -- by design)
+### 3-TER. Can you reproduce it?
+
+| run | weights committed | status |
+| --- | --- | --- |
+| ABMIL, TransMIL, CLAM-SB (both ablation arms) — ResNet50 1024-d | ✅ 12 `_best.pt` | fully reproducible |
+| ABMIL/CLAM-SB on CHIEF, ABMIL on GigaPath | ❌ | metrics + predictions committed, weights not — see [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) for the exact retrain commands |
+
+One command audits this and every other artifact claim in the repo:
+
+```bash
+python scripts/audit_artifacts.py      # 0 fatal = nothing is dangling
+```
+
+## 3-BIS. Get the data (features are NOT in the repo -- by design)
 
 GitHub rejects files over 100 MB and the feature release is ~600 MB per encoder, so
 `data/features*/` is gitignored and lives outside git. Source for every encoder is the

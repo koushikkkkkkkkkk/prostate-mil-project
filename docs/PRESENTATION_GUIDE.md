@@ -1,12 +1,12 @@
 # Presentation Guide & Team Handbook
 
-> [!WARNING]
-> **Numbers audit (2026-11-02).** Every figure in this document must match
-> `results/ALL_RESULTS.md`, which is generated from the committed artifacts. Two numbers
-> previously quoted here are **not reproducible** and have been corrected:
-> the ordinal-logistic baseline is **0.7399** (artifact) not 0.7682 (an earlier single fit
-> with no committed artifact), and the CLAM-SB ablation values (0.6961 / 0.7388) have **no
-> committed artifacts** — treat them as unverified until `results/metrics/clam_sb/` exists.
+> [!NOTE]
+> **Numbers audit (2 Nov 2026) — resolved.** The CLAM-SB ablation has been re-run and its
+> artifacts committed (`results/metrics/clam_sb/`): **0.7035 ± 0.0088 with the instance
+> loss vs 0.7271 ± 0.0223 without**. The values previously quoted here (0.6961 / 0.7388)
+> did not reproduce and are superseded. The ordinal-logistic baseline is **0.7399**
+> (artifact-backed), not 0.7682. Every number in this document should match
+> `results/ALL_RESULTS.md`, which is generated from the committed artifacts.
 
 ## Weakly Supervised Multiple Instance Learning for ISUP Prostate Cancer Grading & Tumor Localization
 
@@ -196,7 +196,8 @@ $$\text{Entropy}(a) = -\sum_{j=1}^N a_j \log(a_j + \epsilon), \quad \text{Normal
 | Configuration | Test QWK (mean ± sd) | Accuracy | Balanced Acc | Macro F1 | Training Dynamics |
 | :--- | :---: | :---: | :---: | :---: | :--- |
 | **CLAM-SB (No Instance Loss, $\lambda=0$)** | **0.7388 ± 0.0040** | 0.3944 | 0.3944 | 0.3367 | Clean early stop (epoch ~43) |
-| **CLAM-SB (With Instance Loss, $\lambda=0.3$)** | **0.6961 ± 0.0164** ⚠️ unverified | 0.3944 | 0.3944 | 0.3294 | **No committed artifacts — re-run needed** |
+| **CLAM-SB (With Instance Loss, $\lambda=0.3$)** | **0.7035 ± 0.0088** | 0.3833 | 0.3833 | 0.3142 | Re-run and committed 2 Nov 2026 |
+| **CLAM-SB (No Instance Loss)** | **0.7271 ± 0.0223** | 0.3944 | 0.3944 | 0.3386 | ΔQWK −0.0236, all CIs span 0 |
 | **ABMIL Baseline (Person 1)** | **0.7281 ± 0.0132** | 0.3889 | 0.3889 | 0.3272 | Stable baseline |
 
 * **$\Delta\text{QWK} = -0.0427$:** The instance-level clustering loss consistently degraded performance.

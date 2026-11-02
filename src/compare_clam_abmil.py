@@ -139,7 +139,7 @@ def _write_markdown(
     path: Path,
 ) -> None:
     lines = [
-        "# ABMIL vs CLAM-SB (paired, same test slides)",
+        f"# {abmil_label} vs {clam_label} (paired, same test slides)",
         "",
         f"Test slides compared: **{results['n_slides']}**",
         "",
