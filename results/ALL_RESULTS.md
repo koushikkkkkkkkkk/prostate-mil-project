@@ -9,21 +9,21 @@ Read the `n test` column: 60 slides for the ResNet50 cohort, 57 for CHIEF, 53 fo
 | run | model | in_dim | manifest | n test | seeds | QWK (mean ± sd) | accuracy | balanced acc. | macro F1 | weights in repo |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `abmil` | abmil | 1024 | common_split.csv | 60 | 3 | **0.7281 ± 0.0132** | 0.3889 ± 0.0255 | 0.3889 ± 0.0255 | 0.3272 ± 0.0295 | ✅ 3 |
-| `abmil_chief` | abmil | 768 | common_split_chief.csv | 57 | 3 | **0.9124 ± 0.0036** | 0.5789 ± 0.0175 | 0.5864 ± 0.0157 | 0.5661 ± 0.0097 | ❌ none |
-| `abmil_gigap` | abmil | 1536 | common_split_gigap.csv | 53 | 3 | **0.9172 ± 0.0169** | 0.6352 ± 0.0475 | 0.6285 ± 0.0467 | 0.6246 ± 0.0507 | ❌ none |
+| `abmil_chief` | abmil | 768 | common_split_chief.csv | 57 | 3 | **0.9035 ± 0.0145** | 0.5614 ± 0.0351 | 0.5698 ± 0.0343 | 0.5440 ± 0.0328 | ✅ 3 |
+| `abmil_gigap` | abmil | 1536 | common_split_gigap.csv | 53 | 3 | **0.8984 ± 0.0108** | 0.5849 ± 0.0327 | 0.5798 ± 0.0341 | 0.5704 ± 0.0289 | ✅ 3 |
 | `clam_sb/with_instance` | clam_sb | 1024 | common_split.csv | 60 | 3 | **0.7035 ± 0.0088** | 0.3833 ± 0.0289 | 0.3833 ± 0.0289 | 0.3142 ± 0.0284 | ✅ 3 |
 | `clam_sb/without_instance` | clam_sb | 1024 | common_split.csv | 60 | 3 | **0.7271 ± 0.0223** | 0.3944 ± 0.0255 | 0.3944 ± 0.0255 | 0.3386 ± 0.0343 | ✅ 3 |
-| `clam_sb_chief` | clam_sb | 768 | common_split_chief.csv | 57 | 3 | **0.9224 ± 0.0014** | 0.5965 ± 0.0000 | 0.6025 ± 0.0011 | 0.5895 ± 0.0019 | ❌ none |
+| `clam_sb_chief` | clam_sb | 768 | common_split_chief.csv | 57 | 3 | **0.9207 ± 0.0063** | 0.6023 ± 0.0101 | 0.6086 ± 0.0102 | 0.5922 ± 0.0085 | ✅ 3 |
 | `transmil` | transmil | 1024 | common_split.csv | 60 | 3 | **0.7446 ± 0.0364** | 0.4833 ± 0.0441 | 0.4833 ± 0.0441 | 0.4475 ± 0.0371 | ✅ 3 |
 
 Per-seed QWK:
 
 - `abmil`: 0.7137, 0.7308, 0.7397
-- `abmil_chief`: 0.9163, 0.9119, 0.9092
-- `abmil_gigap`: 0.9364, 0.9047, 0.9104
+- `abmil_chief`: 0.9168, 0.8880, 0.9056
+- `abmil_gigap`: 0.8871, 0.9085, 0.8995
 - `clam_sb/with_instance`: 0.7137, 0.6991, 0.6978
 - `clam_sb/without_instance`: 0.7023, 0.7336, 0.7454
-- `clam_sb_chief`: 0.9236, 0.9227, 0.9209
+- `clam_sb_chief`: 0.9274, 0.9199, 0.9148
 - `transmil`: 0.7030, 0.7602, 0.7706
 
 ## 2. Paired comparisons (identical slides and seeds)
