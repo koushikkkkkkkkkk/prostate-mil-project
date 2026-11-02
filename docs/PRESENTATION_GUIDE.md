@@ -1,4 +1,13 @@
 # Presentation Guide & Team Handbook
+
+> [!WARNING]
+> **Numbers audit (2026-11-02).** Every figure in this document must match
+> `results/ALL_RESULTS.md`, which is generated from the committed artifacts. Two numbers
+> previously quoted here are **not reproducible** and have been corrected:
+> the ordinal-logistic baseline is **0.7399** (artifact) not 0.7682 (an earlier single fit
+> with no committed artifact), and the CLAM-SB ablation values (0.6961 / 0.7388) have **no
+> committed artifacts** — treat them as unverified until `results/metrics/clam_sb/` exists.
+
 ## Weakly Supervised Multiple Instance Learning for ISUP Prostate Cancer Grading & Tumor Localization
 
 **Target Audience:** Team Members & Presentation Evaluators  
@@ -187,7 +196,7 @@ $$\text{Entropy}(a) = -\sum_{j=1}^N a_j \log(a_j + \epsilon), \quad \text{Normal
 | Configuration | Test QWK (mean ± sd) | Accuracy | Balanced Acc | Macro F1 | Training Dynamics |
 | :--- | :---: | :---: | :---: | :---: | :--- |
 | **CLAM-SB (No Instance Loss, $\lambda=0$)** | **0.7388 ± 0.0040** | 0.3944 | 0.3944 | 0.3367 | Clean early stop (epoch ~43) |
-| **CLAM-SB (With Instance Loss, $\lambda=0.3$)** | **0.6961 ± 0.0164** | 0.3944 | 0.3944 | 0.3294 | **Plateaued; failed early stop (2/3 seeds)** |
+| **CLAM-SB (With Instance Loss, $\lambda=0.3$)** | **0.6961 ± 0.0164** ⚠️ unverified | 0.3944 | 0.3944 | 0.3294 | **No committed artifacts — re-run needed** |
 | **ABMIL Baseline (Person 1)** | **0.7281 ± 0.0132** | 0.3889 | 0.3889 | 0.3272 | Stable baseline |
 
 * **$\Delta\text{QWK} = -0.0427$:** The instance-level clustering loss consistently degraded performance.
@@ -244,7 +253,7 @@ flowchart TD
 1. **The Winning Statistical Baseline (`src/statistical_models.py`):**
    * Engineered bag-level statistical features ($x_{\text{stat}}$: mean, variance, max, min, quantiles of attention-weighted features).
    * Fitted an **Ordinal Logistic Regression** model with proportional odds.
-   * **Result:** Achieved the highest QWK in the entire project: **$\text{QWK} = 0.7682$**, Accuracy = $45.00\%$, Macro F1 = $0.4100$.
+   * **Result:** Achieved **$\text{QWK} = 0.7399$**, Accuracy = $36.67\%$, Macro F1 = $0.3255$ — above ABMIL (+0.012) but far below the CHIEF-encoder models.
    * **Key Takeaway:** A regularized ordinal model operating on MIL-extracted features beats end-to-end neural networks because it explicitly enforces monotonic ordering across ISUP grades $0 \to 5$.
 2. **Interactive Streamlit Web Dashboard (`app/streamlit_app.py`):**
    * Built a full 4-page clinical demo UI:
@@ -260,7 +269,7 @@ flowchart TD
 
 ### 2. Presentation Talking Points for Person 4
 * *"My role was translation and verification: proving our results with statistical rigor and creating an interactive interface where clinicians can explore model predictions."*
-* *"Our Ordinal Logistic Regression achieved the highest QWK of 0.7682. This highlights that deep MIL excels at feature extraction and attention localization, but explicitly ordinal statistical heads provide superior decision boundaries."*
+* *"Our ordinal logistic regression reaches 0.7399, slightly above ABMIL at 0.7281 on the same slides: an explicit ordinal head buys a small amount, but nowhere near the +0.19 that a pathology foundation encoder buys. Deep MIL's advantage is localisation, not raw grading."*
 * *"Our Streamlit app gives pathologists full transparency: not just an ISUP grade, but an interactive attention heatmap showing exactly which glandular patterns drove the prediction."*
 
 ---
@@ -271,5 +280,5 @@ flowchart TD
 | :--- | :--- |
 | **Why not train an end-to-end ResNet50 on the whole slide?** | A whole-slide biopsy is $\approx 100,000 \times 100,000$ pixels. A single slide would require over 50 GB of VRAM just to store the tensor, making mini-batch SGD impossible. MIL decouples feature extraction from bag aggregation. |
 | **Why did CLAM's instance loss fail?** | In binary tasks (tumor vs normal), instance clustering works well. In 6-class ordinal grading, assigning the slide's grade to individual patches injects massive label noise because normal glands in an ISUP 4 biopsy get falsely penalized. |
-| **Why did Ordinal Logistic Regression score 0.7682?** | Deep networks with cross-entropy treat classes as categorical (error from 0 to 1 is penalized the same as 0 to 5). Ordinal logistic regression explicitly penalizes distance along the grade continuum, matching how QWK is evaluated. |
+| **Why did Ordinal Logistic Regression score 0.7399?** | It consumes a MIL model's own attention statistics (so it is not an independent baseline), and its proportional-odds head respects the grade ordering that plain cross-entropy ignores. |
 | **How does the model localize cancer without pixel masks?** | Via the attention mechanism! Patches with high attention weights ($a_j$) correspond to the morphologically atypical regions that forced the bag classifier to predict a high ISUP grade. |

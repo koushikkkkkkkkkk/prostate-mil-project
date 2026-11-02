@@ -43,9 +43,37 @@ identical optimiser schedule. The *only* change is `instance_loss_weight`
 
 Slide-level labels only. Tissue masks are never used for training or model selection.
 
-## 3. Main result — instance-loss ablation
+## 3. Where CLAM-SB actually sits (read this first)
 
-Test split, 60 slides, mean ± sd over 3 seeds:
+All five trained runs on the **50 test slides every run covers**, so the rows are
+comparable (source: `results/metrics/comparison/paired_common_cohort.md`):
+
+| model | encoder | n | QWK | accuracy |
+| --- | --- | --- | --- | --- |
+| **CLAM-SB** | CHIEF (768-d) | 50 | **0.9298 ± 0.0016** | 0.6000 |
+| ABMIL | CHIEF (768-d) | 50 | 0.9182 ± 0.0043 | 0.5800 |
+| ABMIL | GigaPath (1536-d) | 50 | 0.9099 ± 0.0183 | 0.6133 |
+| TransMIL | ResNet50 (1024-d) | 50 | 0.7113 ± 0.0583 | 0.4733 |
+| ABMIL | ResNet50 (1024-d) | 50 | 0.6995 ± 0.0136 | 0.3667 |
+
+Paired per-seed statistics (`paired_stats.md`):
+
+* **Encoder** (ABMIL r50 → ABMIL CHIEF): ΔQWK +0.18 to +0.21, McNemar p 0.004–0.019,
+  CI excludes 0 → a real effect.
+* **Aggregator** (ABMIL → CLAM-SB at fixed CHIEF encoder): ΔQWK +0.007 to +0.012,
+  McNemar p 0.69–1.0, CI spans 0 → **no detectable difference at n = 57**.
+* CHIEF vs GigaPath: −0.02 to +0.01, indistinguishable.
+
+So the honest one-liner for Person 2 is: *CLAM-SB does not beat ABMIL; the encoder is what
+matters.* That is a defensible negative result about the aggregator, and the
+instance-loss ablation below is the second half of the same story.
+
+## 4. Instance-loss ablation ⚠️ artifacts not yet committed
+
+Test split, 60 slides, mean ± sd over 3 seeds (ResNet50 1024-d cohort). **These values
+currently have no committed artifacts** — a second document reports 0.7031 and Δ +0.0098
+instead. Re-run `python -m src.train_clam_sb --seeds 0 1 2` and regenerate
+`results/ALL_RESULTS.md` before quoting them.
 
 | Setting | QWK (mean) | QWK (sd) | Accuracy | Balanced acc. | Macro F1 | Seeds |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -67,7 +95,7 @@ Read this carefully, because it is the whole point of the deliverable:
   alone would have hidden the entire effect. This is why every table carries accuracy next
   to QWK.
 
-## 4. Paired statistics
+## 5. Paired statistics
 
 Per-seed pairing on the same 60 test slides (paired bootstrap CI for ΔQWK, exact McNemar on
 per-slide correctness). These tables are generated from the per-seed
@@ -88,7 +116,7 @@ At n = 60 these two models are **statistically indistinguishable**. The honest c
 therefore "CLAM-SB matches ABMIL on this split"; claiming a CLAM improvement would be
 over-reading a three-slide difference inside a ±0.11 interval.
 
-## 5. Why the instance loss hurt — training dynamics
+## 6. Why the instance loss hurt — training dynamics
 
 This is not just a metric difference; the instalment-loss arm trained worse.
 
@@ -109,21 +137,22 @@ not just worse on average, it is **less stable**. A follow-up tuning sweep over
 give CLAM its best shot before concluding the loss is unhelpful; that sweep is listed as
 remaining work, and until it is run the conclusion is "no benefit at the default weight".
 
-## 6. Statistical baselines on the same attention statistics
+## 7. Statistical baselines on the same attention statistics
 
 | Model | QWK | Accuracy | Macro F1 |
 | --- | --- | --- | --- |
-| Ordinal logistic regression on CLAM-SB attention statistics | **0.7682** | 0.4500 | 0.4100 |
-| CLAM-SB, no instance loss (end-to-end) | 0.7388 | 0.3944 | 0.3367 |
+| Ordinal logistic regression on CLAM-SB attention statistics | **0.7399** | 0.3667 | 0.3255 |
+| CLAM-SB, no instance loss (end-to-end) | 0.7388 (unverified) | 0.3944 | 0.3367 |
+| ABMIL, ResNet50 end-to-end | 0.7281 | 0.3889 | 0.3272 |
 
-The classical baseline is the strongest model in the project. That must be stated plainly:
-a well-regularised ordinal regression on the aggregated attention features beats both MIL
-models on QWK. Caveat to state alongside it — the ordinal model *reuses* CLAM-SB's learned
-attention statistics, so it is not an independent competitor; it measures how much of the
-signal is already captured by the aggregated feature block. It does mean the deep model's
-advantage is in localisation and end-to-end simplicity, not in raw grading accuracy.
+Source for the first row: `results/metrics/statistical/clam_sb/statistical_baselines.json`.
+The ordinal baseline edges past both ResNet50 MIL models by ≈ +0.01 — but it is **not the
+strongest model in the project**: every CHIEF/GigaPath arm is ≈ 0.91–0.93 on the same slides.
+Two caveats to state with it: it *reuses* CLAM-SB's learned attention statistics (so it is
+not an independent competitor), and its +0.01 over ABMIL is inside the seed noise of a
+60-slide test set.
 
-## 7. Heatmaps and localisation coverage
+## 8. Heatmaps and localisation coverage
 
 | Export | Split | Slides with heatmap | Skipped (no coordinates) |
 | --- | --- | --- | --- |
@@ -147,7 +176,7 @@ Two consequences that must be in the limitations:
    proxy used here; it answers "does the instance loss concentrate attention?" not "does it
    land on tumour?".
 
-## 8. Limitations
+## 9. Limitations
 
 * Research prototype; **not a clinical tool**. No external validation.
 * Trained and tested on a PANDA subset only; performance will not transfer unchanged to other
@@ -164,7 +193,7 @@ Two consequences that must be in the limitations:
 * The `instance_loss_weight` sweep and the ABMIL seeds 1–2 paired comparison are still open
   (see §9); the conclusions above hold at the single default weight and seed 0 respectively.
 
-## 9. Open items before submission
+## 10. Open items before submission
 
 1. `evaluate_clam_sb --split all` for seeds 1–2, both arms → fills the attention-sharpness
    table (entropy / top-10 share per arm per seed).

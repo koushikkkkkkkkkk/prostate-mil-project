@@ -1,53 +1,95 @@
 # Results log
 
-One row per *reportable* run. If a run used synthetic data it does not belong here —
-put it in the "mock runs" section at the bottom, which is explicitly non-reportable.
+**This file is a pointer, not a data source.** Every number lives in
+`results/ALL_RESULTS.md`, which is *generated* from the artifacts by
+`python scripts/summarize_results.py`. Tables typed by hand drifted from the
+artifacts three times in this project (a "pending" TransMIL that had been trained, a
+statistical baseline quoted as 0.7682 when the artifact said 0.7399, and a CLAM-SB
+ablation with two different values in two documents). Do not add numbers here;
+regenerate, then quote.
 
-Rule of thumb: if you cannot say exactly which `common_split.csv`, which feature
+```bash
+python scripts/summarize_results.py     # -> results/ALL_RESULTS.md
+python scripts/paired_results.py        # -> results/metrics/comparison/paired_*.md
+python scripts/summarize_person2.py     # -> results/PERSON2_SUMMARY.md (Person 2 detail)
+```
+
+Rule of thumb: if you cannot say exactly which `common_split*.csv`, which feature
 directory and which config produced a number, it is not reportable.
 
 ## Environment of record
 
 | field | value |
 | --- | --- |
-| date | |
-| git commit | |
-| split file | `data/common_split.csv` (300 / 60 / 60) |
-| feature dir | `data/features` |
-| encoder / D | ResNet50 / 1024 |
+| split files | `data/common_split.csv` (300/60/60, r50) · `common_split_chief.csv` (286/56/57) · `common_split_gigap.csv` (281/57/53) |
+| feature dirs | `data/features` (r50, 1024-d) · `data/features_chief` (768-d) · `data/features_gigap` (1536-d) |
 | patch size | 256 × 256, no overlap |
-| seeds | 0, 1, 2 |
-| device | |
+| seeds | 0, 1, 2 (every run) |
+| selection | validation QWK only; test evaluated once per configuration |
 
-## Main results (test split, 60 slides)
+## Headline: aggregator vs encoder (50 common test slides)
 
-| model | config | QWK (mean ± sd) | QWK 95% CI | accuracy | balanced acc. | macro F1 | notes |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| ABMIL | `configs/abmil.yaml` | 0.7281 ± 0.0132 | seeds 0/1/2: 0.7137 / 0.7308 / 0.7397 | 0.3889 | 0.3889 | 0.3272 | Person 1, 3 seeds |
-| CLAM-SB + instance loss | `configs/clam_sb.yaml`, λ=0.30 | 0.6961 ± 0.0164 | see `results/PERSON2_SUMMARY.md` | 0.3944 | 0.3944 | 0.3294 | Person 2, 3 seeds |
-| CLAM-SB, no instance loss | `configs/clam_sb.yaml`, λ=0 | **0.7388 ± 0.0040** | see `results/PERSON2_SUMMARY.md` | 0.3944 | 0.3944 | 0.3367 | Person 2 ablation, 3 seeds |
-| TransMIL | `configs/transmil.yaml` | pending | | | | | Person 3 |
-| Ordinal logistic (x_stat) | `src/statistical_models.py` | 0.7682 | single fit, seed 42 | 0.4500 | — | 0.4100 | Person 4; reuses CLAM-SB attention stats |
-| XGBoost (x_stat) | `src/statistical_models.py` | not run | | | | | Person 4, optional; xgboost not installed |
+Restricted to the slides **every** run covers, so the rows are directly comparable
+(source: `results/metrics/comparison/paired_common_cohort.md`):
 
-## Attention / localisation analysis (Person 2)
+| model | encoder | n | QWK | accuracy |
+| --- | --- | --- | --- | --- |
+| CLAM-SB | CHIEF (768-d) | 50 | **0.9298 ± 0.0016** | 0.6000 |
+| ABMIL | CHIEF (768-d) | 50 | 0.9182 ± 0.0043 | 0.5800 |
+| ABMIL | GigaPath (1536-d) | 50 | 0.9099 ± 0.0183 | 0.6133 |
+| TransMIL | ResNet50 (1024-d) | 50 | 0.7113 ± 0.0583 | 0.4733 |
+| ABMIL | ResNet50 (1024-d) | 50 | 0.6995 ± 0.0136 | 0.3667 |
 
-| arm | attention entropy | normalised entropy | top-10 attention share | top-20% overlap precision | lift |
-| --- | --- | --- | --- | --- | --- |
-| with instance loss | pending (`evaluate_clam_sb --split all`, seeds 0–2) | | | | |
-| without instance loss | pending | | | | |
+Paired statistics (`paired_stats.md`):
 
-_Note: mask-based overlap (precision / lift) is not computable on the feature-only release — no thumbnails, no masks. Heatmaps cover 56/60 test slides (4 slides have no patch coordinates). See `report/person2_section.md` §7._
+* **Encoder effect** — ABMIL, same aggregator, ResNet50 → CHIEF: ΔQWK +0.18 to +0.21,
+  McNemar p 0.004–0.019, CI excludes zero → **real**.
+* **Encoder effect** — CHIEF vs GigaPath: ΔQWK −0.02 to +0.01, CIs span zero →
+  the two foundation encoders are indistinguishable here.
+* **Aggregator effect** — fixed encoder: CLAM-SB − ABMIL on CHIEF = +0.007 to +0.012
+  (McNemar p 0.69–1.0); TransMIL − ABMIL on r50 = −0.01 to +0.03 (p 0.08–1.0) →
+  **inconclusive at n = 50–60**, not "better".
 
-## Paired statistics
+Because the CI spans zero, write "no detectable difference", never "equivalent".
 
-| comparison | ΔQWK (95% bootstrap CI) | McNemar p | interpretation |
-| --- | --- | --- | --- |
-| CLAM-SB − ABMIL | seed 0: +0.0003 [−0.1113, +0.1076] | 1.0000 | indistinguishable at n=60; seeds 1–2 pending |
-| CLAM-SB(λ=0.3) − CLAM-SB(λ=0) | mean −0.0427 over 3 seeds (per-seed CIs in `results/PERSON2_SUMMARY.md`) | per-seed | instance loss did not help; also destabilised early stopping |
+## Every run on its own test set
 
-## Mock runs (NOT reportable — for reference only)
+See `results/ALL_RESULTS.md` §1 (with provenance and a *weights in repo* column).
+Summary: ABMIL r50 0.7281 ± 0.0132 (60) · CLAM-SB r50 0.6961 / 0.7388 ablation (60)
+· TransMIL r50 0.7446 ± 0.0364 (60) · ABMIL CHIEF 0.9124 ± 0.0036 (57) · CLAM-SB
+CHIEF 0.9224 ± 0.0014 (57) · ABMIL GigaPath 0.9172 ± 0.0169 (53).
 
-| date | command | purpose |
+## Ablation: CLAM-SB with vs without instance loss — **artifacts missing**
+
+The mandatory ablation is quoted in older documents as 0.6961 / 0.7388
+(Δ −0.0427). Those artifacts are **not in this repository** and a second document
+reports 0.7031 / Δ +0.0098 instead. Until `results/metrics/clam_sb/` exists with
+`with_instance/` and `without_instance/`, neither number is quotable:
+
+```bash
+python -m src.train_clam_sb --manifest data/common_split.csv --features-root data/features \
+  --config configs/clam_sb.yaml --out-dir results/metrics/clam_sb --seeds 0 1 2
+python scripts/summarize_results.py
+```
+
+## Attention / localisation
+
+| arm | slides | normalised entropy |
 | --- | --- | --- |
-| | `bash scripts/run_mock_demo.sh` | plumbing check on synthetic slides |
+| ABMIL (r50, seed 0) | 420 | 0.7245 |
+| CLAM-SB (r50, seed 0) | 420 | 0.8003 |
+
+Cross-model agreement (56 shared test slides, `attention/agreement_abmil_vs_clam_summary.json`):
+Spearman ρ 0.869, top-k Jaccard 0.502, top-k Cohen κ 0.608.
+
+Mask-based overlap is **not computable**: no thumbnails/masks in the feature-only
+release, and the Karolinska masks contain zero Gleason pixels
+(`scripts/check_mask_encoding.py`). Heatmaps cover **56/60** test slides; the 21
+coord-less slides are listed in `results/metrics/coord_coverage.csv`.
+
+## Mock runs (NOT reportable — reference only)
+
+| command | purpose |
+| --- | --- |
+| `bash scripts/run_mock_demo.sh` | plumbing check on synthetic slides |
+| `results/metrics/patch_cnn_demo/` | 3-epoch tile classifier demo; see its `NOT_REPORTABLE.md` |

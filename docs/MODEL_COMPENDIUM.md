@@ -1,4 +1,13 @@
 # Prostate-MIL: Architectural Dossier & Model Compendium
+
+> [!WARNING]
+> **Numbers audit (2026-11-02).** Every figure in this document must match
+> `results/ALL_RESULTS.md`, which is generated from the committed artifacts. Two numbers
+> previously quoted here are **not reproducible** and have been corrected:
+> the ordinal-logistic baseline is **0.7399** (artifact) not 0.7682 (an earlier single fit
+> with no committed artifact), and the CLAM-SB ablation values (0.6961 / 0.7388) have **no
+> committed artifacts** — treat them as unverified until `results/metrics/clam_sb/` exists.
+
 ## Comprehensive Technical Guide to Weakly Supervised Multiple Instance Learning Models for ISUP Prostate Grading
 
 **Repository:** [`koushikkkkkkkkkk/prostate-mil-project`](https://github.com/koushikkkkkkkkkk/prostate-mil-project)  
@@ -132,7 +141,7 @@ flowchart TD
 ```
 
 ### 5. Critical Empirical Findings & Scientific Ablation
-* **CLAM-SB with Instance Loss ($\lambda = 0.30$):** QWK **$0.6961 \pm 0.0164$** | Accuracy $39.44\%$
+* **CLAM-SB with Instance Loss ($\lambda = 0.30$):** QWK **$0.6961 \pm 0.0164$** | Accuracy $39.44\%$ ⚠️ **artifacts not committed — unverified**
 * **CLAM-SB without Instance Loss ($\lambda = 0.0$ ablation):** QWK **$0.7388 \pm 0.0040$** | Accuracy $39.44\%$
 * **Scientific Insight:** The pseudo-labeling heuristic in heterogeneous prostate core biopsies (where Gleason grades vary within millimeters) introduced label noise into the early stopping criterion, causing the unconstrained variant ($\lambda=0$) to achieve higher QWK and tighter multi-seed stability.
 
@@ -272,13 +281,43 @@ When switching to CHIEF, the MIL encoder input projection changes from $1024 \to
 $$\mathbf{h}_n = \text{Dropout}(\text{ReLU}(\mathbf{W}_{\text{chief}} \mathbf{x}_n^{\text{chief}} + \mathbf{b})), \quad \mathbf{W}_{\text{chief}} \in \mathbb{R}^{512 \times 768}$$
 The gated attention pooling and ordinal classification head remain mathematically identical, isolating the representation quality of the foundation encoder as the controlled independent variable.
 
-### 5. Empirical Results: The Foundation Leap
-* **ResNet50 + ABMIL:** Mean QWK = **$0.7281 \pm 0.0132$** (Accuracy: $38.89\%$)
-* **CHIEF + ABMIL:** Mean QWK = **$0.9124 \pm 0.0036$** (Accuracy: $57.89\%$, Seed 0 peak: **$0.9163$**)
-* **GigaPath + ABMIL:** Mean QWK = **$0.9172 \pm 0.0041$**
+### 5. Empirical Results: the foundation-encoder leap
 
-> [!TIP]
-> **Key Takeaway:** Transitioning from ImageNet features to CHIEF provides a massive **+0.1843 QWK boost**. This proves that the single most decisive factor in computational pathology performance is the biological fidelity of the tile representation, far outweighing marginal changes in aggregator design.
+**Read this table first.** All five trained runs, restricted to the **50 test slides that
+every run covers**, so each row is measured on identical slides and identical labels.
+This is the only table in the project that supports a like-for-like comparison
+(source: `results/metrics/comparison/paired_common_cohort.md`, regenerated from the
+prediction CSVs by `scripts/paired_results.py`).
+
+| model | encoder | n | QWK | accuracy |
+| --- | --- | --- | --- | --- |
+| CLAM-SB | CHIEF ($D{=}768$) | 50 | **$0.9298 \pm 0.0016$** | 0.6000 |
+| ABMIL | CHIEF ($D{=}768$) | 50 | $0.9182 \pm 0.0043$ | 0.5800 |
+| ABMIL | GigaPath ($D{=}1536$) | 50 | $0.9099 \pm 0.0183$ | 0.6133 |
+| TransMIL | ResNet50 ($D{=}1024$) | 50 | $0.7113 \pm 0.0583$ | 0.4733 |
+| ABMIL | ResNet50 ($D{=}1024$) | 50 | $0.6995 \pm 0.0136$ | 0.3667 |
+
+Paired per-seed statistics (`paired_stats.md`):
+
+| question | comparison | $\Delta$QWK | 95 % CI | McNemar p | verdict |
+| --- | --- | --- | --- | --- | --- |
+| does the **encoder** matter? | ABMIL r50 → ABMIL CHIEF | $+0.18$ to $+0.21$ | excludes 0 | 0.004–0.019 | **yes** |
+| CHIEF vs GigaPath? | ABMIL CHIEF → ABMIL GigaPath | $-0.02$ to $+0.01$ | spans 0 | 0.30–1.0 | indistinguishable |
+| does the **aggregator** matter? | ABMIL → CLAM-SB (CHIEF) | $+0.007$ to $+0.012$ | spans 0 | 0.69–1.0 | **no detectable effect** |
+| does the **aggregator** matter? | ABMIL → TransMIL (r50) | $-0.01$ to $+0.03$ | spans 0 | 0.08–1.0 | **no detectable effect** |
+
+> [!IMPORTANT]
+> **Key Takeaway:** The decisive factor is the **biological fidelity of the tile
+> representation**, not the aggregator. Swapping ImageNet ResNet50 for a pathology
+> foundation encoder is worth $\approx +0.19$ QWK with a McNemar p of 0.004; swapping
+> ABMIL for CLAM-SB or TransMIL is worth $\le 0.02$ with a confidence interval spanning
+> zero at $n=50$–$60$. Report "no detectable difference", never "equivalent".
+
+> [!WARNING]
+> The native-cohort numbers in `results/ALL_RESULTS.md` §1 (60 / 57 / 53 test slides)
+> are **not** mutually comparable; only the 50-slide table above is. And always print
+> accuracy beside QWK: at QWK $0.92$ the CHIEF models still mis-grade $\approx 40\%$ of
+> slides exactly, which is why the ordinal metric and the exact-class metric disagree.
 
 ---
 
@@ -305,9 +344,9 @@ Deep MIL networks are often perceived as black boxes. The statistical ordinal ba
    $$\hat{y} = \arg\max_{j \in \{0, \dots, 5\}} P(Y = j \mid \mathbf{x}_{\text{stat}})$$
 
 ### 4. Empirical Performance & Clinical Lesson
-* **Test QWK:** **$0.7682$**
+* **Test QWK:** **$0.7399$** (artifact: `results/metrics/statistical/clam_sb/statistical_baselines.json`; an earlier single fit reported 0.7682 but no artifact for it was ever committed)
 * **Test Accuracy:** **$45.00\%$** | Macro F1: **$0.4100$**
-* **Significance:** The ordinal logistic regression achieved a higher QWK ($0.7682$) than standard ABMIL trained with categorical cross-entropy ($0.7281$). This highlights that **ordinal penalty calibration** (penalizing a Grade 0 vs 5 error much more severely than Grade 3 vs 4) is critical in histological grading.
+* **Significance:** The ordinal logistic regression ($0.7399$ on the artifacts committed here) edges past ABMIL trained with categorical cross-entropy ($0.7281$), a difference of +0.012 on the same 60 slides. This highlights that **ordinal penalty calibration** (penalizing a Grade 0 vs 5 error much more severely than Grade 3 vs 4) is critical in histological grading.
 
 ---
 
@@ -316,9 +355,9 @@ Deep MIL networks are often perceived as black boxes. The statistical ordinal ba
 | Model Architecture | Backbone Encoder | Encoder Pre-training | QWK (Mean ± SD) | Test Accuracy | Macro F1 | Primary Strength | Key Limitation |
 |---|---|---|---|---|---|---|---|
 | **ABMIL** | ResNet50 (1024-d) | ImageNet-1k | $0.7281 \pm 0.0132$ | $38.89\%$ | $0.3272$ | Fast, clean gated attention | Ignores inter-patch correlation |
-| **CLAM-SB ($\lambda=0.3$)**| ResNet50 (1024-d) | ImageNet-1k | $0.6961 \pm 0.0164$ | $39.44\%$ | $0.3294$ | Multi-task clustering constraint | Pseudo-labels noisy on core biopsies |
+| **CLAM-SB ($\lambda=0.3$)** ⚠️ unverified | ResNet50 (1024-d) | ImageNet-1k | $0.6961 \pm 0.0164$ | $39.44\%$ | $0.3294$ | Multi-task clustering constraint | Pseudo-labels noisy on core biopsies |
 | **CLAM-SB ($\lambda=0$)** | ResNet50 (1024-d) | ImageNet-1k | $0.7388 \pm 0.0040$ | $39.44\%$ | $0.3367$ | High stability without noise | Does not leverage clustering |
 | **TransMIL** | ResNet50 (1024-d) | ImageNet-1k | $0.7446 \pm 0.0364$ | $48.33\%$ | $0.4475$ | Correlated spatial tokens via PPEG| Quadratic attention VRAM cost |
-| **Ordinal Logistic** | Feature Stats ($x_{\text{stat}}$)| ImageNet-1k | $0.7682$ (single fit)| $45.00\%$ | $0.4100$ | Native ordinal ranking loss | No spatial localization heatmaps |
+| **Ordinal Logistic** | Feature Stats ($x_{\text{stat}}$)| ImageNet-1k | $0.7399$ (single fit)| $36.67\%$ | $0.3255$ | Native ordinal ranking loss | No spatial localization heatmaps |
 | **ABMIL + CHIEF** | CHIEF (768-d) | 15M Pathology Tiles | **$0.9124 \pm 0.0036$** | **$57.89\%$** | **$0.5661$** | **Pathology foundation representation** | Requires foundation weights (~1 GB) |
 | **ABMIL + GigaPath** | Prov-GigaPath (1536-d)| 1.3B Pathology Tiles | **$0.9172 \pm 0.0041$** | **$58.12\%$** | **$0.5702$** | Ultra-large context representation| 1536-d high memory footprint |
