@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Person 4 (localisation, statistical baselines, patch CNN) full pipeline on REAL features.
+# Person 4 (localisation, statistical baselines) full pipeline on REAL features.
 #
 #   bash scripts/run_person4_experiments.sh
 #
@@ -135,5 +135,3 @@ echo "  baselines       : $OUT_STAT/<model>/statistical_baselines.json"
 echo "  heatmaps        : results/heatmaps/abmil/images , results/heatmaps/clam_sb/images"
 echo "  localisation    : results/heatmaps/clam_sb/localisation_scores.csv (only with --masks)"
 echo
-echo "Patch CNN is NOT in this script: it needs tile PNGs, which the pre-extracted"
-echo "feature release does not ship. See PERSON4_RUNBOOK.md section 6."

@@ -119,7 +119,7 @@ def discover_checkpoints(root: Path = ROOT) -> Dict[str, Any]:
 
 def _guess_model_name(path: Path) -> str:
     text = str(path).lower()
-    for key in ("clam_sb", "clam-sb", "abmil", "transmil", "patch_cnn"):
+    for key in ("clam_sb", "clam-sb", "abmil", "transmil"):
         if key in text:
             return key
     return "unknown"

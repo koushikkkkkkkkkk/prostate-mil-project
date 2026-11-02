@@ -75,7 +75,6 @@ flowchart LR
   * `models/abmil.py`: Gated Attention MIL baseline (Person 1).
   * `models/clam_sb.py`: Clustering-constrained single-branch MIL (Person 2).
   * `models/transmil.py`: Transformer-based correlated MIL with PPEG (Person 3).
-  * `models/patch_cnn.py`: 4-layer patch classifier (Person 4).
   * `statistical_models.py`: Ordinal Logistic Regression & XGBoost baselines on bag statistics.
   * `dataset.py`: PyTorch `FeatureBagDataset` with variable-length collate and coords support.
   * `train.py`: Unified multi-seed training engine with early stopping on validation QWK.
@@ -248,7 +247,7 @@ flowchart TD
 
 # Page 7: Person 4 Profile — Baselines, Evaluation Protocol & Interactive App
 **Team Member:** Person 4  
-**Assigned Deliverable:** Statistical Baselines, Streamlit Demo App, Evaluation Suite & Patch CNN Analysis  
+**Assigned Deliverable:** Statistical Baselines, Streamlit Demo App & Evaluation Suite  
 
 ### 1. What Person 4 Built & Delivered
 1. **The Winning Statistical Baseline (`src/statistical_models.py`):**
@@ -264,9 +263,14 @@ flowchart TD
      * **Page 4 (Patch Attribution):** Displays the top-$k$ most attended patches driving the malignancy prediction.
 3. **Rigorous Evaluation Suite (`src/evaluate.py`):**
    * Implemented official Quadratic Weighted Kappa, Macro F1, Balanced Accuracy, per-class Confusion Matrices, paired bootstrap confidence intervals, and McNemar tests.
-4. **Patch CNN Scientific Analysis (`src/models/patch_cnn.py`):**
-   * Implemented a 4-layer patch classification CNN.
-   * **Scientific Decision (§9):** Withheld training under naive slide-level pseudo-labels. In biopsy tissue, 70–90% of patches are benign stroma even in high-grade cancer; naively labeling every patch with the slide grade corrupts supervised CNN training. This rigorously justifies why weakly supervised MIL is necessary.
+4. **The case against patch-level supervision (a decision, not a gap).**
+   * In biopsy tissue 70–90 % of patches are benign stroma even in high-grade cancer, so
+     labelling every patch with the slide grade corrupts a supervised classifier's signal.
+   * The public masks for this provider contain no Gleason 3/4/5 pixels at all — audited with
+     `scripts/check_mask_encoding.py`, 99.88 % background and 0.12 % stroma across 24 slides —
+     so no honest patch labels exist.
+   * This is what makes the weakly supervised framing necessary rather than convenient, and it
+     is why no patch-level classifier appears in this project.
 
 ### 2. Presentation Talking Points for Person 4
 * *"My role was translation and verification: proving our results with statistical rigor and creating an interactive interface where clinicians can explore model predictions."*

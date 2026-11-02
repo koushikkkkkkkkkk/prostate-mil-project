@@ -86,7 +86,7 @@ Paired bootstrap CI on ΔQWK (2000 resamples) and the exact McNemar test on per-
 
 ## 3. Ablation (mandatory: CLAM-SB with vs without instance loss)
 
-#### `results\metrics\clam_sb\ablation_clam_sb.md`
+#### `results/metrics/clam_sb/ablation_clam_sb.md`
 
 # CLAM-SB instance-level supervision ablation
 
@@ -122,7 +122,6 @@ _These consume a MIL model's own attention statistics, so they are **not** indep
 
 ## 6. Not reportable
 
-Synthetic (`mock_*`) runs and the toy patch-CNN demo live outside the tables above and must never be quoted:
+Synthetic (`mock_*`) runs live outside the tables above and must never be quoted:
 
-- **PatchCNN demo** (`results/metrics/patch_cnn_demo/`): 333 validation tiles, best tile accuracy 0.8378, 3 epochs. Different data, different task, different unit of prediction — not comparable to the run table.
 - Any `results/mock_*/` folder (synthetic slide generation).

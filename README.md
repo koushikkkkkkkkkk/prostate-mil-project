@@ -36,7 +36,6 @@ only**, and produces attention heatmaps that localise suspicious regions.
 | **CLAM-SB attention heatmaps + localisation score** | **Person 2** | `src/export_clam_attention.py`, `src/heatmaps.py` | ✅ implemented |
 | **Paired ABMIL-vs-CLAM-SB statistics** | **Person 2** | `src/compare_clam_abmil.py` | ✅ implemented |
 | Simplified TransMIL (PPEG + CLS) | Person 3 | `src/models/transmil.py` | ✅ implemented, tested |
-| Patch CNN | Person 4 | `src/models/patch_cnn.py` | ⚠️ implemented + demo only (`results/metrics/patch_cnn_demo/NOT_REPORTABLE.md`) — PANDA has no patch labels |
 | Ordinal logistic baseline | Person 4 | `src/statistical_models.py` | ✅ trained (consumes MIL attention stats) |
 | Metrics: QWK, bootstrap CI, McNemar, overlap | Person 4 | `src/evaluate.py` | ✅ implemented |
 | Streamlit demo | Person 4 | `app/streamlit_app.py` | ✅ implemented |
@@ -247,7 +246,7 @@ prostate-mil-project/
 │   ├── evaluate_clam_sb.py    Person 2: checkpoint evaluation + attention export
 │   ├── export_clam_attention.py Person 2: heatmaps + top-k patches + overlap
 │   ├── compare_clam_abmil.py  Person 2: paired statistics vs ABMIL
-│   ├── models/                abmil, clam_sb, transmil, patch_cnn, base
+│   ├── models/                abmil, clam_sb, transmil, base
 │   └── utils/mock_data.py     synthetic bag generator
 ├── tests/                     unit + end-to-end tests
 ├── app/streamlit_app.py       interactive demo
@@ -264,7 +263,7 @@ prostate-mil-project/
 | 1 (lead) | split, preprocessing, features, ABMIL, shared trainer | `data/common_split.csv`, `src/dataset.py`, `src/train.py` |
 | 2 | CLAM-SB, ablation, heatmaps, ABMIL comparison | `src/models/clam_sb.py`, `src/{train,evaluate}_clam_sb.py`, `src/export_clam_attention.py`, `src/compare_clam_abmil.py` |
 | 3 | TransMIL | `src/models/transmil.py` |
-| 4 | patch CNN, statistical baselines, metrics, app | `src/evaluate.py`, `src/statistical_models.py`, `app/` |
+| 4 | statistical baselines, metrics, app | `src/evaluate.py`, `src/statistical_models.py`, `app/` |
 
 Shared rules: no test-set tuning, no copying official CLAM/TransMIL code, no pixel-level
 labels during training, fixed seeds (`0, 1, 2`), everything reproducible from the repo.

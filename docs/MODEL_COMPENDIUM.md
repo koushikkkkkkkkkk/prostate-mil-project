@@ -214,50 +214,6 @@ This reflects how strongly each tissue patch contributed to updating the final w
 
 ---
 
-# Model 4: Patch-CNN (4-Layer Convolutional Neural Network)
-
-### 1. Executive Identity & Technical Role
-* **Author / Reference:** Person 4 (Aswathram) / Tile-Level Supervised Baseline.
-* **Project Role:** Independent tile-level classifier and pixel-to-patch probability validator.
-* **Implementation Source:** [`src/models/patch_cnn.py`](file:///home/koushikkkk/brain/prostate-mil-project/src/models/patch_cnn.py).
-
-### 2. What It Does
-Patch-CNN is a lightweight, 4-stage convolutional neural network designed to ingest raw $256 \times 256 \times 3$ RGB pixel patches directly and predict tile-level malignancy (benign vs. malignant). In the original design, its tile predictions were intended to serve as an independent spatial verification map to benchmark weakly supervised MIL attention heatmaps against direct pixel-level supervised ground truth.
-
-### 3. Detailed Architecture & Tensor Dimensions
-* **Input:** Raw RGB tile $[B, 3, 256, 256]$ normalized using ImageNet channel statistics ($\mu = [0.485, 0.456, 0.406], \sigma = [0.229, 0.224, 0.225]$).
-* **Stage 1:** $\text{Conv2D}(3 \to 32, 3 \times 3, p=1) \to \text{BatchNorm2D} \to \text{ReLU} \to \text{MaxPool2D}(2) \implies [B, 32, 128, 128]$
-* **Stage 2:** $\text{Conv2D}(32 \to 64, 3 \times 3, p=1) \to \text{BatchNorm2D} \to \text{ReLU} \to \text{MaxPool2D}(2) \implies [B, 64, 64, 64]$
-* **Stage 3:** $\text{Conv2D}(64 \to 128, 3 \times 3, p=1) \to \text{BatchNorm2D} \to \text{ReLU} \to \text{MaxPool2D}(2) \implies [B, 128, 32, 32]$
-* **Stage 4:** $\text{Conv2D}(128 \to 128, 3 \times 3, p=1) \to \text{BatchNorm2D} \to \text{ReLU} \to \text{AdaptiveAvgPool2D}(1) \implies [B, 128, 1, 1]$
-* **Classifier Head:** $\text{Flatten} \to \text{Dropout}(0.20) \to \text{Linear}(128 \to 2) \implies [B, 2]$ (Benign vs. Malignant)
-
-### 4. Architectural Diagram
-
-```mermaid
-flowchart LR
-    IN["RGB Tile<br/>3 x 256 x 256"] --> C1["Conv3x3(32) + BN + ReLU + Pool"]
-    C1 --> F1["32 x 128 x 128"]
-    F1 --> C2["Conv3x3(64) + BN + ReLU + Pool"]
-    C2 --> F2["64 x 64 x 64"]
-    F2 --> C3["Conv3x3(128) + BN + ReLU + Pool"]
-    C3 --> F3["128 x 32 x 32"]
-    F3 --> C4["Conv3x3(128) + BN + ReLU + AdaptivePool"]
-    C4 --> F4["128 x 1 x 1"]
-    F4 --> HEAD["Linear(128 -> 2)"]
-    HEAD --> PROB["Softmax: [P_benign, P_malignant]"]
-```
-
-### 5. The Training Blocker & Scientific Defense (Data Audit)
-While the model architecture is complete and unit-tested with forward passes verified on $(2, 3, 256, 256)$, **the model was deliberately not trained on real PANDA data**.
-
-> [!IMPORTANT]
-> **Data Audit Finding:** Supervised patch training requires pixel-level Gleason masks to derive patch ground truth. Our empirical audit across 24 slides at all six ISUP grades confirmed that **Karolinska slides contain completely blank Gleason masks (99.88% background, 0.12% stroma, 0.00% tumor pixels)**. ISUP 4/5 slides containing malignant tumor lacked pixel annotations in the public release.
->
-> **Design Decision:** Weak supervision (assigning every patch the whole-slide label) was evaluated and formally rejected because labeling non-neoplastic stroma in an ISUP 5 slide as "malignant" severely degrades classifier specificity. The blocker is confirmed missing source data labels, not compute or code.
-
----
-
 # Model 5: Pathology Foundation Encoders (CHIEF & Prov-GigaPath)
 
 ### 1. Executive Identity & Paper References

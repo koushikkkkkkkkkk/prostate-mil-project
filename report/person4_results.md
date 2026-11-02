@@ -220,30 +220,17 @@ feature set.
 
 ---
 
-## 9. Patch CNN — implemented, not trained
+## 9. Why there is no patch-level classifier
 
-`src/models/patch_cnn.py` is complete and unit-tested: `PatchCNN` (60,818 parameters at
-`width=16`), `PatchCNNConfig`, `PatchDataset`, `train_patch_cnn`, `predict_patch_grid`.
-A forward pass on `(2, 3, 256, 256)` returns `(2, 2)` as expected.
+Patch-level supervision is impossible with this data, and that is a finding rather than a
+gap. The public PANDA masks for our provider are 99.88 % background and 0.12 % stroma with
+no Gleason 3/4/5 pixels anywhere (§3.3 of the master report), so there is nothing with which
+to supervise a tile classifier. Labelling every patch with its slide's grade is not a
+substitute: in biopsy tissue 70–90 % of patches are benign stroma even in high-grade cancer,
+so the label noise swamps the signal.
 
-It was **not trained**, for two independent reasons:
-
-1. **No patch pixels.** `data/patches/` is empty; the PANDA feature release provides frozen
-   embeddings and coordinates only; `patch_paths` is optional in the data contract, and the
-   extractor that would produce tiles (`notebooks/02`) has only been run against mock data.
-2. **No patch labels for our provider.** The Kaggle release does ship `train_label_masks`,
-   so pixel annotations exist in PANDA as a whole -- but they do not cover our slides. Every
-   slide in the locked split is Karolinska, and across 24 slides stratified over all six
-   ISUP grades (four per grade) the masks are 99.88% background and 0.12% stroma, with **no
-   Gleason 3/4/5 pixels anywhere**. ISUP 4 slides, which by definition contain annotated
-   tumour, have entirely empty masks. Pixel-level labels in this release are therefore
-   Radboud-only, and `data/common_split.csv` contains no Radboud slides.
-   Reproduction: `scripts/check_mask_encoding.py --masks <kagglehub>/train_label_masks
-   --mask-subdir train_label_masks --stratify --inspect 24`.
-
-Patch-level localisation is instead approached through MIL attention weights, with the
-caveat in §7.2 that attention is a model-internal signal rather than a validated
-annotation.
+Localisation is therefore approached only through MIL attention weights (§7), reported as an
+interpretability cue on 56 of 60 slides rather than as a segmentation.
 
 ---
 
@@ -328,6 +315,6 @@ jupyter nbconvert --to notebook --execute notebooks/06_localization_and_stats.ip
    24 slides at every ISUP grade, §9), and the locked split contains no Radboud slides.
    Attention agreement (§7.2) is therefore the strongest statement the data supports.
 6. **No heatmaps for the pathology encoders.** Their feature release omits coordinates.
-7. **The patch CNN is unimplemented at the data level**, not at the code level (§9).
+7. **Patch-level supervision is impossible at the data level**, not skipped for convenience (§9).
 8. **Statistical baselines are not independent** — they consume the MIL models' own
    attention.

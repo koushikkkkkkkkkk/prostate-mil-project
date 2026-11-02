@@ -105,4 +105,3 @@ coord-less slides are listed in `results/metrics/coord_coverage.csv`.
 | command | purpose |
 | --- | --- |
 | `bash scripts/run_mock_demo.sh` | plumbing check on synthetic slides |
-| `results/metrics/patch_cnn_demo/` | 3-epoch tile classifier demo; see its `NOT_REPORTABLE.md` |

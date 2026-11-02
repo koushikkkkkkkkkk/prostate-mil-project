@@ -17,7 +17,7 @@ Everything else is done. Total remaining work: **about two hours, one person, on
 | P0-3 | run + commit the CLAM-SB ablation | **done** — 0.7035 / 0.7271 | `results/metrics/clam_sb/`, commit `eda3401` |
 | P1-4 | generated results table, no hand-typed numbers | **done** | `results/ALL_RESULTS.md`, `docs/RESULTS_LOG.md` |
 | P1-5 | lead with the paired table | **done** | `results/metrics/comparison/paired_*` |
-| P1-6 | quarantine the toy patch-CNN | **done** | `results/metrics/patch_cnn_demo/NOT_REPORTABLE.md` |
+| P1-6 | remove the toy patch-CNN | **done** — deleted, not quarantined (2 Nov 2026) | `src/models/patch_cnn.py` and its demo folder are gone |
 | P2-7 | Colab setup cells + provenance guard | **done** | notebooks 03/04/05/06 |
 | P2-8 | document the data + `verify_data.py` | **done** | README §3-BIS, `scripts/verify_data.py` |
 | P2-9 | delete duplicate script, "54 tests", CI | **done** | `.github/workflows/tests.yml`, `scripts/README.md` |
@@ -319,9 +319,9 @@ Select-String -Path docs\*.md,report\*.md -Pattern "unverified"             # no
 python scripts\summarize_results.py; python scripts\paired_results.py
 git status --short                                                # no modified generated files
 
-# P1-6  the toy CNN is quarantined
-Test-Path results\metrics\patch_cnn_demo\NOT_REPORTABLE.md         # True
-Select-String -Path README.md -Pattern "patch_cnn"                 # at most a "demo, not reportable" line
+# P1-6  the toy CNN is gone
+Test-Path results\metrics\patch_cnn_demo                           # False
+Select-String -Path README.md,src\models\*.py -Pattern "patch_cnn"  # no output
 
 # P2-7  every trainer guards against mock data
 Select-String -Path notebooks\*.ipynb -Pattern "REFUSING TO TRAIN" | Measure-Object | % Count   # 4
@@ -343,15 +343,16 @@ report without a caveat.
 
 ## Part E — the one paragraph to say out loud
 
-> "Our strongest result is a QWK of 0.93 with CLAM-SB on CHIEF features, but the thing we
+> "Our strongest result is a QWK of 0.92 with CLAM-SB on CHIEF features, but the thing we
 > actually established is that the **encoder** decides the outcome: moving from ImageNet
 > ResNet50 to a pathology foundation encoder is worth +0.17 to +0.21 QWK with every paired CI excluding zero,
 > while swapping the aggregator — ABMIL, CLAM-SB, TransMIL — moves the number by less than
-> 0.02 with a confidence interval that spans zero. The attention maps are an
+> 0.04 with no significant McNemar test. The attention maps are an
 > interpretability cue on 56 of 60 slides, not a segmentation; the masks contain no
 > Gleason pixels at all, which is why patch-level supervision was impossible. This is a
-> research prototype on a PANDA subset, and the ISUP imbalance means accuracy understates
-> performance, so QWK is the metric of record."
+> research prototype on a PANDA subset, and accuracy understates performance because the
+> errors are almost always exactly one ISUP grade off (80–95 % of them for the
+> foundation-encoder models), so QWK is the metric of record.""
 
 ---
 

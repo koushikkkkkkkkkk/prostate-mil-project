@@ -1,8 +1,8 @@
-# Person 4 runbook — localisation, statistical baselines, patch CNN, evaluation, app
+# Person 4 runbook — localisation, statistical baselines, evaluation, app
 
 **Scope of this runbook:** everything in `notebooks/06_localization_and_stats.ipynb`, plus
 the Person 4 code that notebook depends on (`src/heatmaps.py` localisation scoring,
-`src/statistical_models.py`, `src/models/patch_cnn.py`, `src/evaluate.py`, `app/streamlit_app.py`).
+`src/statistical_models.py`, `src/evaluate.py`, `app/streamlit_app.py`).
 
 **Your hardware:** RTX 5060 laptop (Blackwell, `sm_120`), so **run everything locally**.
 Do **not** move Person 4's work to Colab — it is mostly CPU work on small attention tables
@@ -34,9 +34,8 @@ feature release on 2026-10-31):
 | 2 | Attention heatmaps + top-k patch tables + contact sheets | `src/export_attention.py` (ABMIL, added by me), `src/export_clam_attention.py` (CLAM-SB, Person 2) | `results/heatmaps/<model>/images/`, `top_patches/`, `arrays/*.npz` | Figures yes, numbers only as qualitative examples |
 | 3 | `x_stat` bag statistics → ordinal logistic regression (+ optional XGBoost) | `src/statistical_models.py` | `results/metrics/statistical/<model>/statistical_baselines.json`, `statistical_predictions.csv` | **Yes** — "is MIL needed at all?" baseline |
 | 4 | Attention sharpness comparison ABMIL vs CLAM-SB (entropy, top-10 share) | new `scripts/run_person4_experiments.sh` | `results/metrics/attention/attention_stats_abmil_vs_clam.md` | Yes (supports Person 2's claim) |
-| 5 | Patch CNN benign-vs-malignant probability map | `src/models/patch_cnn.py` | `results/metrics/patch_cnn.pt` + prob maps | **No AUC/F1** — PANDA has no patch labels (§6) |
-| 6 | Metrics library: QWK, bootstrap CI, paired bootstrap, McNemar | `src/evaluate.py` | used by everyone | Yes — you own the metric code, so keep it stable |
-| 7 | Streamlit demo | `app/streamlit_app.py` | running app | Demo only |
+| 5 | Metrics library: QWK, bootstrap CI, paired bootstrap, McNemar | `src/evaluate.py` | used by everyone | Yes — you own the metric code, so keep it stable |
+| 6 | Streamlit demo | `app/streamlit_app.py` | running app | Demo only |
 
 Rule from the repo (`docs/RESULTS_LOG.md`): never report a
 mock number. Every localisation/patch-CNN claim must say which split, which checkpoint and
@@ -129,7 +128,6 @@ results/metrics/abmil/checkpoints/abmil_seed0_best.pt        Person 1 (already c
 results/metrics/clam_sb/with_instance/checkpoints/clam_sb_seed0_best.pt   Person 2
 data/masks/{image_id}.png        OPTIONAL, coarse tumour/tissue mask  -> localisation score
 data/thumbnails/{image_id}.png   OPTIONAL, for readable overlays
-data/patches/{image_id}/*.png    OPTIONAL, only for the patch CNN (§6)
 ```
 
 The repo's existing `scripts/download_real_features.py` downloads the features **only**, as a
@@ -311,55 +309,24 @@ subprocess.run([sys.executable, "-m", "src.statistical_models",
                 "--out-dir", "results/metrics/statistical/abmil"], check=True)
 ```
 
-4. Section 3 (patch CNN) will only *instantiate* the model (it needs no patch images) — that is
-   the intended behaviour; see §8 for what real training needs.
-
 **Figures to lift into the report from this notebook**
 
 * attention-vs-mask overlap JSON (precision/recall/lift at top-10/20/30%) — only with real masks;
 * attention distribution histograms (`attention_distribution_*.png`) for ABMIL vs CLAM-SB;
 * heatmap + `_overlay.png` pairs for 3–5 test slides with `pred` vs `true` in the title;
-* top-12 patch contact sheets (only if patch paths exist — see §8);
+* top-12 patch contact sheets (only if patch paths exist);
 * the ordinal-baseline vs MIL QWK comparison table.
 
 ---
 
-## 8. Step 5 — patch CNN (the honest version)
+## 8. Step 5 — patch-level supervision: why there is none
 
-What the code does: `src/models/patch_cnn.py::PatchCNN` is a 4-conv-layer classifier
-(`num_classes=2` benign/malignant, or 6 for ISUP), with `PatchDataset` reading a CSV of
-`patch_path,label` rows, a `train_patch_cnn(...)` loop and `predict_patch_grid(...)` that turns
-per-patch malignant probabilities into a slide-level grid.
-
-What you **cannot** do with the current data: PANDA has no *patch-level* labels, and the public
-feature release ships no tile images at all (`panda/patches/{id}.h5` = coords only). So a
-patch CNN trained on real PANDA tiles requires downloading the 347 GB Kaggle `.tiff` set and
-tiling it with `src/preprocessing.py` — that is Person 1's patch pipeline, and it is a
-multi-hour, multi-hundred-GB job on a laptop.
-
-Three defensible paths, in order of effort:
-
-1. **Weakly supervised proxy (recommended, no new download).** Use CLAM-SB's instance clustering
-   pseudo-labels as patch labels: for each slide take the top-B / bottom-B attention patches as
-   malignant / benign, write `data/patch_labels/train.csv` (`patch_path,label`), train the CNN
-   on those. You still need patch PNGs for this (below), but the *labels* are free.
-2. **Mock patching (plumbing only).** `scripts/make_mock_features.py` writes real PNG tiles +
-   `data/mock/patches/<id>/*.png`, so you can build and validate the whole
-   `train_patch_cnn → predict_patch_grid → heatmap` chain today on synthetic tiles. Results are
-   non-reportable, but the *code path* is proven.
-3. **Full PANDA path (expensive).** Kaggle images → `python -m src.preprocessing --slide … --out data/patches/<image_id>`
-   per slide (Person 1's script, ~1–3 min/slide CPU) → labels from CLAM-SB attention → train.
-   Realistically: do this only for a subset (say 20 slides) and state it.
-
-The "patch CNN probability map vs MIL attention map" comparison figure is the deliverable —
-report it as a *proxy* comparison, not as patch-level AUC, unless you built path 3 with real
-labels.
-
-Minimal training call once you have a label CSV and tiles:
-
-```powershell
-python -c "from src.models.patch_cnn import train_patch_cnn; print(train_patch_cnn('data/patch_labels/train.csv','data/patch_labels/val.csv', out_path='results/metrics/patch_cnn.pt', epochs=5))"
-```
+No patch-level classifier is built in this project, by decision. The public feature release
+ships no tile images (`panda/patches/{id}.h5` is coordinates only), and the masks for this
+provider contain no Gleason pixels, so a supervised tile classifier has nothing to learn
+from: labelling tiles with the slide grade injects 70–90 % benign-stroma label noise. Use MIL
+attention for localisation (§7) and do not spend a day on this. The reasoning is written up
+in `report/REPORT.md` §3.3 and `report/person4_results.md` §9.
 
 ---
 
@@ -437,7 +404,7 @@ comparison (`docs/DATA_CONTRACT.md` is explicit about this).
 - [ ] `results/metrics/statistical/{abmil,clam_sb}/statistical_baselines.json` — ordinal baseline QWK (+XGBoost if installed).
 - [ ] Heatmaps + overlays + top-k tables for the 60 test slides, both models.
 - [ ] `localisation_scores.csv` **or** an explicit "masks unavailable, qualitative only" statement.
-- [ ] Patch CNN: either a proxy experiment with clearly labelled weak labels, or a stated scope limitation.
+- [x] Patch-level supervision: stated as a data limitation with the reasoning in §8, not attempted.
 - [ ] `notebooks/06_localization_and_stats.ipynb` re-run end to end, outputs committed (small only).
 - [ ] `src/evaluate.py` untouched by others since your last test run; 54 tests green.
 - [ ] Every table in the report cites split file + feature dir + checkpoint + seed, and no mock number appears.
@@ -453,7 +420,7 @@ comparison (`docs/DATA_CONTRACT.md` is explicit about this).
 | Day 1 PM | §6 pipeline on real features with `TRAIN=1` (1 seed first) | 1 h |
 | Day 1 evening | §7 notebook re-run on real numbers; capture 6 figures | 1 h |
 | Day 2 AM | masks decision (§4.3) → either Kaggle masks download or option B; re-run with `--masks` | 0.5–3 h |
-| Day 2 PM | §8 patch CNN path 1 or 2; §9 app + tests + commit + report tables | 2 h |
+| Day 2 PM | §9 app + tests + commit + report tables | 1 h |
 
 ---
 

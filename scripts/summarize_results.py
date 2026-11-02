@@ -192,9 +192,6 @@ def build_markdown(results: Path) -> str:
     statistical = collect_statistical(results)
     heatmaps = collect_heatmaps(results)
     attention = collect_attention(results)
-    patch_cnn = load_json(results / "metrics" / "patch_cnn_demo" / "patch_cnn_summary.json") or load_json(
-        results / "metrics" / "patch_cnn_summary.json"
-    )
 
     lines: List[str] = [
         "# All committed results",
@@ -284,17 +281,9 @@ def build_markdown(results: Path) -> str:
     lines += [
         "## 6. Not reportable",
         "",
-        "Synthetic (`mock_*`) runs and the toy patch-CNN demo live outside the tables above "
-        "and must never be quoted:",
+        "Synthetic (`mock_*`) runs live outside the tables above and must never be quoted:",
         "",
     ]
-    if patch_cnn:
-        lines.append(
-            f"- **PatchCNN demo** (`results/metrics/patch_cnn_demo/`): {patch_cnn.get('val_samples', '?')} "
-            f"validation tiles, best tile accuracy {patch_cnn.get('best_val_accuracy', '?')}, "
-            f"{len(patch_cnn.get('history', []))} epochs. Different data, different task, "
-            "different unit of prediction — not comparable to the run table."
-        )
     lines.append("- Any `results/mock_*/` folder (synthetic slide generation).")
     lines.append("")
 
