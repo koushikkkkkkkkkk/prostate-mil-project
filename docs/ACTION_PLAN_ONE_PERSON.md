@@ -254,7 +254,7 @@ python scripts\audit_artifacts.py          # 0 fatal, and the ablation warning i
 ### C4. Update the three places that currently say "unverified"
 
 ```powershell
-Select-String -Path docs\*.md,report\*.md,presentation_guide_and_team_handbook.md -Pattern "unverified"
+Select-String -Path docs\*.md,report\*.md,docs/PRESENTATION_GUIDE.md -Pattern "unverified"
 ```
 
 Three edits, each a two-minute copy from `results/ALL_RESULTS.md`:
@@ -269,7 +269,7 @@ Three edits, each a two-minute copy from `results/ALL_RESULTS.md`:
 Then commit:
 
 ```powershell
-git add results/metrics/clam_sb results/metrics/statistical results/heatmaps/clam_sb results/ALL_RESULTS.md results/metrics/comparison results/PERSON2_SUMMARY.md docs report presentation_guide_and_team_handbook.md
+git add results/metrics/clam_sb results/metrics/statistical results/heatmaps/clam_sb results/ALL_RESULTS.md results/metrics/comparison results/PERSON2_SUMMARY.md docs report docs/PRESENTATION_GUIDE.md
 git commit -m "results(P0-3): rerun and commit the CLAM-SB instance-loss ablation
 
 with_instance/ and without_instance/ now exist for seeds 0/1/2, so the ablation

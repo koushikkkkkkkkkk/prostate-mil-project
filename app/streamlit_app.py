@@ -696,6 +696,122 @@ def render() -> None:
             f"best val QWK={float(checkpoint_meta.get('best_val_qwk', float('nan'))):.4f})."
         )
 
+        # ---- dataset card -------------------------------------------- #
+        st.divider()
+        st.subheader("The data, precisely")
+        st.markdown(
+            "**420 H&E prostate biopsies from PANDA**, pre-extracted into patch features. "
+            "Every number in this app and in the report comes from these slides."
+        )
+        col_a, col_b = st.columns([1.15, 1])
+        with col_a:
+            st.markdown(
+                "| ISUP | Gleason | train | val | test | total |\n"
+                "| --- | --- | --- | --- | --- | --- |\n"
+                "| 0 — benign | 0+0 | 50 | 10 | 10 | **70** |\n"
+                "| 1 | 3+3 | 50 | 10 | 10 | **70** |\n"
+                "| 2 | 3+4 | 50 | 10 | 10 | **70** |\n"
+                "| 3 | 4+3 | 50 | 10 | 10 | **70** |\n"
+                "| 4 | 4+4 / 3+5 / 5+3 | 50 | 10 | 10 | **70** |\n"
+                "| 5 | 4+5 / 5+4 / 5+5 | 50 | 10 | 10 | **70** |\n"
+                "| **total** | | **300** | **60** | **60** | **420** |"
+            )
+        with col_b:
+            st.markdown(
+                "- **70 benign, 350 cancerous** (5:1) — the cohort is *class-balanced by construction*, "
+                "so imbalance is **not** why accuracy looks low.\n"
+                "- **All 420 slides are Karolinska.** No Radboud slides, so there is no provider-shift "
+                "estimate and no patch-level Gleason supervision available.\n"
+                "- **4 % of PANDA** (420 of 10,616), stratified rather than sampled from the true "
+                "distribution.\n"
+                "- Features from `Dearcat/CPathPatchFeature` (Tang et al., 2025); we do not re-tile "
+                "gigapixel WSIs.\n"
+                "- Patch coordinates exist for **399 / 420** slides, so heatmaps cover **56 of 60** "
+                "test slides."
+            )
+
+        # ---- verified results ---------------------------------------- #
+        st.divider()
+        st.subheader("Verified results (7 trained runs, 3 seeds each)")
+        st.caption(
+            "Read the `n` column: 60 slides for the ResNet50 cohort, 57 for CHIEF, 53 for GigaPath. "
+            "Rows are **not** measured on the same slides — the common-cohort column is the like-for-like one."
+        )
+        st.markdown(
+            "| run | encoder | n | QWK (own test set) | QWK (50 shared slides) | accuracy |\n"
+            "| --- | --- | --- | --- | --- | --- |\n"
+            "| CLAM-SB | CHIEF 768-d | 57 | **0.9224 ± 0.0014** | **0.9298 ± 0.0016** | 0.596 |\n"
+            "| ABMIL | GigaPath 1536-d | 53 | 0.9172 ± 0.0169 | 0.9099 ± 0.0183 | 0.635 |\n"
+            "| ABMIL | CHIEF 768-d | 57 | 0.9124 ± 0.0036 | 0.9182 ± 0.0043 | 0.579 |\n"
+            "| TransMIL | ResNet50 1024-d | 60 | 0.7446 ± 0.0364 | 0.7113 ± 0.0583 | 0.483 |\n"
+            "| ABMIL | ResNet50 1024-d | 60 | 0.7281 ± 0.0132 | 0.6995 ± 0.0136 | 0.389 |\n"
+            "| CLAM-SB, no instance loss | ResNet50 1024-d | 60 | 0.7271 ± 0.0223 | 0.7001 ± 0.0313 | 0.394 |\n"
+            "| CLAM-SB + instance loss | ResNet50 1024-d | 60 | 0.7035 ± 0.0088 | 0.6680 ± 0.0110 | 0.383 |"
+        )
+        st.info(
+            "**Weights:** ABMIL, TransMIL and both CLAM-SB arms (12 checkpoints) are committed and "
+            "reproducible. The three CHIEF/GigaPath runs ship predictions and metrics but **not** "
+            "weights — see `docs/REPRODUCIBILITY.md`."
+        )
+
+        # ---- findings ------------------------------------------------- #
+        st.divider()
+        st.subheader("What we found")
+        st.markdown(
+            "**1. The encoder decides everything.** ABMIL ResNet50 → ABMIL CHIEF is worth "
+            "**+0.18 to +0.21 QWK**, McNemar p = 0.004 / 0.004 / 0.019, every confidence interval "
+            "excluding zero.\n\n"
+            "**2. The aggregator decides nothing detectable.** ABMIL → CLAM-SB is +0.007 to +0.012 "
+            "(CHIEF) and 0.0000 to −0.0114 (ResNet50); ABMIL → TransMIL is −0.011 to +0.031. Every "
+            "interval spans zero, on **two independent encoders**.\n\n"
+            "**3. The instance-loss ablation is a clean negative.** 0.7035 vs 0.7271, but the sign "
+            "flips between seeds and no paired test separates the arms. We report *no detectable "
+            "effect at n = 60*, not a winner.\n\n"
+            "**4. The instance loss diffuses attention** rather than sharpening it: normalised "
+            "entropy 0.80 vs 0.70, top-10 attention share 0.34 vs 0.44 — the opposite of the "
+            "mechanism CLAM proposes.\n\n"
+            "**5. Accuracy understates this task.** 94–96 % of the foundation-encoder models' errors "
+            "are exactly one ISUP grade off, which QWK credits and accuracy counts as a total miss."
+        )
+        st.warning(
+            "**Claims we explicitly do not make:** that CLAM-SB beats ABMIL; that the instance loss "
+            "sharpens attention; that attention maps segment tumour (no masks exist for this "
+            "provider); or that any of this generalises beyond a single-provider 420-slide subset."
+        )
+
+        # ---- team ----------------------------------------------------- #
+        st.divider()
+        st.subheader("Who built what")
+        st.markdown(
+            "| person | contribution | key artifact |\n"
+            "| --- | --- | --- |\n"
+            "| **Person 1** — Koushik | data contract, locked stratified split, frozen ResNet50 "
+            "features, ABMIL baseline | `src/dataset.py`, `src/train.py`, `results/metrics/abmil/` |\n"
+            "| **Person 2** — Archit | CLAM-SB from scratch, mandatory instance-loss ablation, paired "
+            "statistics, results pipeline | `src/models/clam_sb.py`, `results/metrics/clam_sb/`, "
+            "`scripts/paired_results.py` |\n"
+            "| **Person 3** — Himesh | TransMIL with PPEG, transformer baseline | "
+            "`src/models/transmil.py`, `results/metrics/transmil/` |\n"
+            "| **Person 4** — Aswath | metrics, bootstrap/McNemar tests, attention export, "
+            "localisation coverage, statistical baselines, this dashboard | `src/evaluate.py`, "
+            "`app/streamlit_app.py` |"
+        )
+
+        # ---- provenance ----------------------------------------------- #
+        st.divider()
+        st.subheader("Provenance — how to check any number you see here")
+        st.markdown(
+            "- Every table in **Results & reports** is rendered from files under `results/`, never "
+            "typed into the app.\n"
+            "- `results/ALL_RESULTS.md` is generated from the committed predictions by "
+            "`scripts/summarize_results.py`; `scripts/paired_results.py` regenerates every paired "
+            "statistic.\n"
+            "- `scripts/audit_artifacts.py` reports any result a reviewer could not reproduce "
+            "(currently **0 fatal**, 3 warnings — the three runs without weights).\n"
+            "- CI on every push runs 54 tests, `pyflakes`, a check that the committed tables still "
+            "match the artifacts, and a train/test-leakage scan of all four manifests."
+        )
+
     # ----------------------------------------------------------------- #
     # 2. Slide analysis
     # ----------------------------------------------------------------- #

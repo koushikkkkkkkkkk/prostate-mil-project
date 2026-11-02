@@ -98,3 +98,27 @@ jobs:
           python-version: "3.13"
       - name: Audit results for dangling references and unverifiable claims
         run: python scripts/audit_artifacts.py
+
+  report-pdf:
+    name: report builds (PDF)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install reportlab
+        run: python -m pip install --upgrade pip && pip install reportlab
+      - name: Render report/REPORT.md and fail on unsupported markdown
+        run: python scripts/build_report_pdf.py --output /tmp/REPORT.pdf
+      - name: Check the PDF has no missing glyphs
+        run: |
+          pip install pypdf
+          python - <<'PY'
+          import sys
+          from pypdf import PdfReader
+          reader = PdfReader("/tmp/REPORT.pdf")
+          bad = [i + 1 for i, page in enumerate(reader.pages) if "\u25a0" in page.extract_text()]
+          print(f"{len(reader.pages)} pages, pages with missing glyphs: {bad}")
+          sys.exit(1 if bad else 0)
+          PY

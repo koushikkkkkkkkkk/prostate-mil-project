@@ -6,6 +6,12 @@
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python&logoColor=white)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+> **Read the report first:** [`report/REPORT.md`](report/REPORT.md) ·
+> [`report/REPORT.pdf`](report/REPORT.pdf) — the full write-up with abstract, methods,
+> paired statistics and limitations. Per-person sections:
+> [`person1`](report/person1_section.md) · [`person2`](report/person2_section.md) ·
+> [`person3`](report/person3_section.md) · [`person4`](report/person4_results.md).
+
 An end-to-end MIL framework, written **from scratch in PyTorch**, that grades pan-cancer
 prostate biopsy whole-slide images into ISUP Grade Groups 0-5 using **slide-level labels
 only**, and produces attention heatmaps that localise suspicious regions.
@@ -194,7 +200,7 @@ network, same seed, same features, no instance supervision.
 Reports two things for each arm: QWK (does grading improve?) and attention entropy /
 top-10 attention share (does attention get sharper?).
 
-See [`PERSON2_README.md`](PERSON2_README.md) for the full Person 2 handbook.
+See [`report/person2_section.md`](report/person2_section.md) for the full Person 2 write-up.
 
 ---
 
@@ -218,12 +224,10 @@ See [`PERSON2_README.md`](PERSON2_README.md) for the full Person 2 handbook.
 ```
 prostate-mil-project/
 ├── README.md                  ← you are here
-├── PLAN.md                    team plan & milestones
-├── PERSON2_README.md          Person 2 (CLAM-SB) handbook
-├── AGENT_MASTER_INSTRUCTIONS.md  original build blueprint (kept for reference)
+├── report/                    the written report: REPORT.md (master) + per-person sections
 ├── configs/                   YAML hyperparameters (real + mock variants)
 ├── data/                      raw / patches / features (all gitignored) + common_split.csv
-├── docs/                      DATA_CONTRACT.md, RESULTS_LOG.md
+├── docs/                      DATA_CONTRACT, RESULTS_LOG, REPRODUCIBILITY, MODEL_COMPENDIUM
 ├── notebooks/                 01 EDA … 06 localisation & stats
 ├── scripts/                   create_split, make_mock_features, run_* pipelines
 ├── src/

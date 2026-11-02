@@ -38,7 +38,7 @@ feature release on 2026-10-31):
 | 6 | Metrics library: QWK, bootstrap CI, paired bootstrap, McNemar | `src/evaluate.py` | used by everyone | Yes — you own the metric code, so keep it stable |
 | 7 | Streamlit demo | `app/streamlit_app.py` | running app | Demo only |
 
-Rule from the repo (`AGENT_MASTER_INSTRUCTIONS.md`, `docs/RESULTS_LOG.md`): never report a
+Rule from the repo (`docs/RESULTS_LOG.md`): never report a
 mock number. Every localisation/patch-CNN claim must say which split, which checkpoint and
 which mask source produced it.
 
