@@ -83,3 +83,18 @@ jobs:
                   ok = False
           sys.exit(0 if ok else 1)
           PY
+
+  artifact-audit:
+    name: artifact audit (report only)
+    runs-on: ubuntu-latest
+    # Report-only on purpose: the audit FAILs while the CLAM-SB weight files are
+    # still local to Person 2's machine. Read the job log; it must be green
+    # before the submission.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Audit results for dangling references and unverifiable claims
+        run: python scripts/audit_artifacts.py
