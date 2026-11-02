@@ -1,0 +1,85 @@
+name: tests
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  unit-tests:
+    name: unit + end-to-end tests (CPU)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install CPU torch + core deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+          # test-only extras: h5py for the coords tests, streamlit for the app tests
+          pip install h5py pyflakes
+
+      - name: Lint (pyflakes)
+        run: python -m pyflakes src scripts app tests
+
+      - name: Unit + end-to-end tests
+        env:
+          MPLBACKEND: Agg
+        run: python -m unittest discover -s tests -v
+
+  provenance:
+    name: results tables match the artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install deps (no torch needed for the table generators)
+        run: |
+          python -m pip install --upgrade pip
+          pip install scikit-learn numpy scipy
+      - name: Regenerate the paired tables and fail if the commit is stale
+        run: |
+          python scripts/paired_results.py --out /tmp/paired
+          diff -q results/metrics/comparison/paired_common_cohort.md /tmp/paired/paired_common_cohort.md \
+            || (echo "::error::paired tables are stale -- run 'python scripts/paired_results.py' and commit" && exit 1)
+          diff -q results/metrics/comparison/paired_stats.md /tmp/paired/paired_stats.md \
+            || (echo "::error::paired stats are stale -- run 'python scripts/paired_results.py' and commit" && exit 1)
+
+  manifest-integrity:
+    name: no slide appears in two splits
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Check every manifest for train/test overlap
+        run: |
+          python - <<'PY'
+          import csv, glob, sys
+          ok = True
+          for path in sorted(glob.glob("data/common_split*.csv")):
+              rows = list(csv.DictReader(open(path)))
+              splits = {}
+              for row in rows:
+                  splits.setdefault(row["split"], set()).add(row["image_id"])
+              tr, te = splits.get("train", set()), splits.get("test", set())
+              dupes = len(rows) - len({r["image_id"] for r in rows})
+              overlap = len(tr & te)
+              print(f"{path}: {len(rows)} rows, train/test overlap={overlap}, duplicate ids={dupes}")
+              if overlap or dupes:
+                  ok = False
+          sys.exit(0 if ok else 1)
+          PY

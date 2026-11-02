@@ -42,7 +42,6 @@ Owner: Person 4 (with thanks to Person 2's CLAM-SB exporter for the layout).
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
@@ -211,7 +210,6 @@ def export_attention(
         title=f"{tag} attention ({split})",
     )
 
-    tag_from_payload = f"{payload.get('model_name', 'model')}_seed{payload.get('seed')}"
     summary = {
         "checkpoint": str(checkpoint),
         "attention_csv": str(out_dir / f"attention_{tag}.csv"),

@@ -52,7 +52,7 @@ def prepare_thumbnails_and_masks(
     if len(existing_thumbs) == len(slide_ids) and not force:
         print(f"✓ All {len(slide_ids)} thumbnails already present in {thumbnails_dir}")
     else:
-        print(f"Fetching 512x512 PANDA slide images via kagglehub...")
+        print("Fetching 512x512 PANDA slide images via kagglehub...")
         try:
             import kagglehub
             dataset_dir = Path(kagglehub.dataset_download("xhlulu/panda-resized-train-data-512x512"))

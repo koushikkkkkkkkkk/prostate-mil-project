@@ -557,7 +557,6 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     config = load_yaml(args.config) if args.config else {}
 
     model_config = dict(config.get("model", {}))
-    data_config = dict(config.get("data", {}))
     training = dict(config.get("training", {}))
 
     if args.epochs is not None:

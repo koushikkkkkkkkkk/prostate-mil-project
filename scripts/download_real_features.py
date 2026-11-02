@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import argparse
 import csv
-import os
 import sys
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed

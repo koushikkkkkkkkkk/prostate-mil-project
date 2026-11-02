@@ -36,6 +36,7 @@ Total download: ~600-800 MB. Re-running is cheap: existing files are reused.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import csv
 import sys
 import urllib.request
@@ -151,9 +152,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     if not manifest.exists():
         print(f"ERROR: manifest not found: {manifest}", file=sys.stderr)
         return 1
-    try:
-        import h5py  # noqa: F401
-    except ModuleNotFoundError:
+    if importlib.util.find_spec("h5py") is None:
         print("ERROR: h5py is required for coordinates.  pip install h5py", file=sys.stderr)
         return 1
 

@@ -5,10 +5,13 @@ notebooks. Nothing here trains or mutates anything.
 """
 from __future__ import annotations
 
-import csv
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+
+if TYPE_CHECKING:  # annotations only -- pandas/numpy stay optional at runtime
+    import numpy as np
+    import pandas as pd
 
 # --------------------------------------------------------------------------- #
 # Encoder / run labelling
@@ -31,7 +34,6 @@ def pretty_run(folder: str) -> Dict[str, str]:
 
     ``abmil_chief`` -> {"model": "ABMIL", "encoder": "CHIEF", "family": "pathology"}
     """
-    row = csv_dict = {}
     parts = folder.split("/")
     name = parts[0]
     sub = parts[1] if len(parts) > 1 else ""
