@@ -60,6 +60,14 @@ def run_config_for(run_dir: Path) -> Dict[str, Any]:
     return {}
 
 
+def rel_to_root(path: Path) -> str:
+    """Display path relative to the repo, tolerating a relative --results arg."""
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
 def checkpoint_state(run_dir: Path) -> str:
     """Are the weights for this run actually in the repo?"""
     checkpoints = sorted(run_dir.glob("checkpoints/*.pt")) + sorted(run_dir.glob("*.pt"))
@@ -108,7 +116,7 @@ def collect_runs(results: Path) -> List[Dict[str, Any]]:
 def collect_ablations(results: Path) -> List[str]:
     lines: List[str] = []
     for path in sorted((results / "metrics").glob("**/ablation_*.md")):
-        lines.append(f"#### `{path.relative_to(ROOT)}`\n")
+        lines.append(f"#### `{rel_to_root(path)}`\n")
         lines.append(path.read_text(encoding="utf-8").strip())
         lines.append("")
     if not lines:
@@ -300,6 +308,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     results = Path(args.results)
+    if not results.is_absolute():
+        results = (Path.cwd() / results).resolve()
     if not results.is_dir():
         print(f"ERROR: results folder not found: {results}", file=sys.stderr)
         return 1

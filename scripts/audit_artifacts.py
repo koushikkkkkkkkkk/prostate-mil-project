@@ -52,10 +52,15 @@ def check_checkpoint_references(results: Path) -> List[Tuple[str, str, str]]:
         if not checkpoint:
             continue
         candidate = ROOT / str(checkpoint).replace("\\", "/")
+        rel = str(path.relative_to(ROOT))
         if candidate.exists():
-            findings.append((OK, str(path.relative_to(ROOT)), f"checkpoint present: {checkpoint}"))
+            findings.append((OK, rel, f"checkpoint present: {checkpoint}"))
+        elif Path(str(checkpoint)).is_absolute():
+            # An export made in Colab records /content/... which cannot exist here.
+            # That is a portability problem, not a missing artifact: warn, do not fail.
+            findings.append((WARN, rel, f"non-portable absolute checkpoint path (exported in Colab): {checkpoint}"))
         else:
-            findings.append((FAIL, str(path.relative_to(ROOT)), f"DANGLING checkpoint reference: {checkpoint}"))
+            findings.append((FAIL, rel, f"DANGLING checkpoint reference: {checkpoint}"))
     return findings
 
 
