@@ -1,3 +1,3 @@
 | Model | QWK (mean) | QWK (std) | Accuracy | Balanced acc. | Macro F1 | Seeds |
 | --- | --- | --- | --- | --- | --- | --- |
-| clam_sb | 0.9224 | 0.0014 | 0.5965 | 0.6025 | 0.5895 | 3 |
+| clam_sb | 0.9207 | 0.0063 | 0.6023 | 0.6086 | 0.5922 | 3 |
