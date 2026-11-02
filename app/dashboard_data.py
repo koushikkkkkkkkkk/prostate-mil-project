@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional
 ENCODER_LABELS = {
     "abmil": "ResNet50",
     "clam_sb": "ResNet50",
+    "transmil": "ResNet50",
     "abmil_chief": "CHIEF",
     "clam_sb_chief": "CHIEF",
     "abmil_gigap": "GigaPath",
@@ -35,7 +36,15 @@ def pretty_run(folder: str) -> Dict[str, str]:
     name = parts[0]
     sub = parts[1] if len(parts) > 1 else ""
     encoder = ENCODER_LABELS.get(name, "ResNet50")
-    model = "CLAM-SB" if name.startswith("clam") else "ABMIL" if name.startswith("abmil") else name.upper()
+    if name.startswith("transmil"):
+        model = "TransMIL"
+    elif name.startswith("clam"):
+        model = "CLAM-SB"
+    elif name.startswith("abmil"):
+        model = "ABMIL"
+    else:
+        model = name.upper()
+
     if sub in ("with_instance", "no_instance"):
         model = f"{model} ({sub.replace('_', ' ')})"
     family = "baseline" if encoder == "ResNet50" else "pathology encoder"
@@ -176,8 +185,9 @@ def load_fused_summary(metrics_root: Path) -> Dict[str, Any]:
 
 def load_statistical(metrics_root: Path) -> List[Dict[str, Any]]:
     out = []
-    for f in sorted((metrics_root / "statistical").glob("*.json")):
+    for f in sorted((metrics_root / "statistical").glob("**/*.json")):
         d = _read_json(f)
         if d:
-            out.append({"model": f.stem.replace("_ordinal_logistic", ""), **d})
+            name = f.parent.name if f.parent.name != "statistical" else f.stem
+            out.append({"model": name, **d})
     return out
