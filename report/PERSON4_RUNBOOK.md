@@ -21,7 +21,7 @@ feature release on 2026-10-31):
 | tilings differ per provider | Karolinska grid starts at 3520/3856 with 256 px steps; Radboud slides have a different origin/step. Never assume a global origin. |
 | no patch images upstream | the release ships **features + coords only**. `panda/patches/*.h5` contains coords, not pixels. Patch PNGs exist only for the synthetic mock data. |
 | PANDA raw (if you ever want pixels) | Kaggle `prostate-cancer-grade-assessment`, ~347 GB images + ~37 GB masks |
-| tests | `python -m unittest discover -s tests` → 21 tests pass (~25 s CPU) |
+| tests | `python -m unittest discover -s tests` → 54 tests pass (~25 s CPU) |
 | GPU note | Blackwell needs **torch ≥ 2.7 with cu128** wheels; the default PyPI torch is CPU-only |
 
 ---
@@ -102,7 +102,7 @@ Common install failures:
 Sanity check the repo itself before you touch data:
 
 ```powershell
-python -m unittest discover -s tests -v      # 21 tests, all OK
+python -m unittest discover -s tests -v      # 54 tests, all OK
 ```
 
 Optional 30-second end-to-end smoke test on synthetic data (no download at all):
@@ -377,7 +377,7 @@ files — the public release has none, so expect that panel to stay empty unless
 Tests (run before every commit — you own `src/evaluate.py`):
 
 ```powershell
-python -m unittest discover -s tests -v          # 21 tests, ~25 s, CPU only
+python -m unittest discover -s tests -v          # 54 tests, ~55 s, CPU only
 ```
 
 Git — you are Person 4, so stay inside your files and branch:
@@ -439,7 +439,7 @@ comparison (`docs/DATA_CONTRACT.md` is explicit about this).
 - [ ] `localisation_scores.csv` **or** an explicit "masks unavailable, qualitative only" statement.
 - [ ] Patch CNN: either a proxy experiment with clearly labelled weak labels, or a stated scope limitation.
 - [ ] `notebooks/06_localization_and_stats.ipynb` re-run end to end, outputs committed (small only).
-- [ ] `src/evaluate.py` untouched by others since your last test run; 21 tests green.
+- [ ] `src/evaluate.py` untouched by others since your last test run; 54 tests green.
 - [ ] Every table in the report cites split file + feature dir + checkpoint + seed, and no mock number appears.
 
 ---
@@ -448,7 +448,7 @@ comparison (`docs/DATA_CONTRACT.md` is explicit about this).
 
 | when | what | time |
 | --- | --- | --- |
-| Day 1 AM | §3 env + cu128 torch + 21 tests + `run_mock_demo.sh` smoke test | 45 min |
+| Day 1 AM | §3 env + cu128 torch + 54 tests + `run_mock_demo.sh` smoke test | 45 min |
 | Day 1 midday | §4 `download_features_and_coords.py` (all 420) while you read `src/evaluate.py` | 15 min active |
 | Day 1 PM | §6 pipeline on real features with `TRAIN=1` (1 seed first) | 1 h |
 | Day 1 evening | §7 notebook re-run on real numbers; capture 6 figures | 1 h |

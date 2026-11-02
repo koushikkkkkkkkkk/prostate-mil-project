@@ -144,7 +144,7 @@ flowchart TD
 * **CLAM-SB with Instance Loss ($\lambda = 0.30$):** QWK **$0.7035 \pm 0.0088$** | Accuracy $38.33\%$ (committed: `results/metrics/clam_sb/with_instance/`)
 * **CLAM-SB, no instance loss:** QWK **$0.7271 \pm 0.0223$** | Accuracy $39.44\%$ (committed: `results/metrics/clam_sb/without_instance/`)
 * **ΔQWK (with − without) = $-0.0236$**, but the per-seed sign flips (−0.0114 / +0.0345 / +0.0476) and every 95 % CI spans zero → **no detectable effect at n = 60**.
-* **CLAM-SB without Instance Loss ($\lambda = 0.0$ ablation):** QWK **$0.7388 \pm 0.0040$** | Accuracy $39.44\%$
+* **CLAM-SB without Instance Loss ($\lambda = 0.0$ ablation):** QWK **$0.7271 \pm 0.0223$** | Accuracy $39.44\%$
 * **Scientific Insight:** The pseudo-labeling heuristic in heterogeneous prostate core biopsies (where Gleason grades vary within millimeters) introduced label noise into the early stopping criterion, causing the unconstrained variant ($\lambda=0$) to achieve higher QWK and tighter multi-seed stability.
 
 ---
@@ -358,7 +358,7 @@ Deep MIL networks are often perceived as black boxes. The statistical ordinal ba
 |---|---|---|---|---|---|---|---|
 | **ABMIL** | ResNet50 (1024-d) | ImageNet-1k | $0.7281 \pm 0.0132$ | $38.89\%$ | $0.3272$ | Fast, clean gated attention | Ignores inter-patch correlation |
 | **CLAM-SB ($\lambda=0.3$)** | ResNet50 (1024-d) | ImageNet-1k | $0.7035 \pm 0.0088$ | $38.33\%$ | $0.3142$ | Multi-task clustering constraint | Pseudo-labels noisy on core biopsies |
-| **CLAM-SB ($\lambda=0$)** | ResNet50 (1024-d) | ImageNet-1k | $0.7388 \pm 0.0040$ | $39.44\%$ | $0.3367$ | High stability without noise | Does not leverage clustering |
+| **CLAM-SB ($\lambda=0$)** | ResNet50 (1024-d) | ImageNet-1k | $0.7271 \pm 0.0223$ | $39.44\%$ | $0.3386$ | Higher mean, higher variance | Does not leverage clustering |
 | **TransMIL** | ResNet50 (1024-d) | ImageNet-1k | $0.7446 \pm 0.0364$ | $48.33\%$ | $0.4475$ | Correlated spatial tokens via PPEG| Quadratic attention VRAM cost |
 | **Ordinal Logistic** | Feature Stats ($x_{\text{stat}}$)| ImageNet-1k | $0.7399$ (single fit)| $36.67\%$ | $0.3255$ | Native ordinal ranking loss | No spatial localization heatmaps |
 | **ABMIL + CHIEF** | CHIEF (768-d) | 15M Pathology Tiles | **$0.9124 \pm 0.0036$** | **$57.89\%$** | **$0.5661$** | **Pathology foundation representation** | Requires foundation weights (~1 GB) |

@@ -60,21 +60,28 @@ Because the CI spans zero, write "no detectable difference", never "equivalent".
 ## Every run on its own test set
 
 See `results/ALL_RESULTS.md` §1 (with provenance and a *weights in repo* column).
-Summary: ABMIL r50 0.7281 ± 0.0132 (60) · CLAM-SB r50 0.6961 / 0.7388 ablation (60)
+Summary: ABMIL r50 0.7281 ± 0.0132 (60) · CLAM-SB r50 0.7035 ± 0.0088 with instance loss,
+0.7271 ± 0.0223 without (60)
 · TransMIL r50 0.7446 ± 0.0364 (60) · ABMIL CHIEF 0.9124 ± 0.0036 (57) · CLAM-SB
 CHIEF 0.9224 ± 0.0014 (57) · ABMIL GigaPath 0.9172 ± 0.0169 (53).
 
-## Ablation: CLAM-SB with vs without instance loss — **artifacts missing**
+## Ablation: CLAM-SB with vs without instance loss — **run and committed 2 Nov 2026**
 
-The mandatory ablation is quoted in older documents as 0.6961 / 0.7388
-(Δ −0.0427). Those artifacts are **not in this repository** and a second document
-reports 0.7031 / Δ +0.0098 instead. Until `results/metrics/clam_sb/` exists with
-`with_instance/` and `without_instance/`, neither number is quotable:
+Generated from `results/metrics/clam_sb/{with,without}_instance/`; do not retype it:
+
+| Setting | QWK (mean) | QWK (sd) | Accuracy | Macro F1 | Seeds |
+| --- | --- | --- | --- | --- | --- |
+| CLAM-SB + instance loss | 0.7035 | 0.0088 | 0.3833 | 0.3142 | 3 |
+| CLAM-SB, no instance loss | 0.7271 | 0.0223 | 0.3944 | 0.3386 | 3 |
+
+ΔQWK (with − without) = **−0.0236**, but the per-seed sign flips
+(−0.0114 / +0.0345 / +0.0476) and every 95 % bootstrap CI spans zero, so the claim is
+**no detectable effect at n = 60**, not "the loss hurts". The 0.6961 / 0.7388 pair quoted
+in older documents did not reproduce and is retired.
 
 ```bash
-python -m src.train_clam_sb --manifest data/common_split.csv --features-root data/features \
-  --config configs/clam_sb.yaml --out-dir results/metrics/clam_sb --seeds 0 1 2
-python scripts/summarize_results.py
+python -m src.train_clam_sb --seeds 0 1 2      # retrains both arms
+python scripts/summarize_results.py && python scripts/paired_results.py
 ```
 
 ## Attention / localisation

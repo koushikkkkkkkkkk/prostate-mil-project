@@ -195,7 +195,7 @@ $$\text{Entropy}(a) = -\sum_{j=1}^N a_j \log(a_j + \epsilon), \quad \text{Normal
 
 | Configuration | Test QWK (mean ± sd) | Accuracy | Balanced Acc | Macro F1 | Training Dynamics |
 | :--- | :---: | :---: | :---: | :---: | :--- |
-| **CLAM-SB (No Instance Loss, $\lambda=0$)** | **0.7388 ± 0.0040** | 0.3944 | 0.3944 | 0.3367 | Clean early stop (epoch ~43) |
+| **CLAM-SB (No Instance Loss, $\lambda=0$)** | **0.7271 ± 0.0223** | 0.3944 | 0.3944 | 0.3386 | Re-run and committed 2 Nov 2026 |
 | **CLAM-SB (With Instance Loss, $\lambda=0.3$)** | **0.7035 ± 0.0088** | 0.3833 | 0.3833 | 0.3142 | Re-run and committed 2 Nov 2026 |
 | **CLAM-SB (No Instance Loss)** | **0.7271 ± 0.0223** | 0.3944 | 0.3944 | 0.3386 | ΔQWK −0.0236, all CIs span 0 |
 | **ABMIL Baseline (Person 1)** | **0.7281 ± 0.0132** | 0.3889 | 0.3889 | 0.3272 | Stable baseline |
@@ -238,7 +238,7 @@ flowchart TD
 
 ### 3. Execution & Workflow
 * Scaffolding ready in [`notebooks/05_transmil_training.ipynb`](file:///home/koushikkkk/brain/prostate-mil-project/notebooks/05_transmil_training.ipynb) and [`configs/transmil.yaml`](file:///home/koushikkkk/brain/prostate-mil-project/configs/transmil.yaml).
-* Replicating across seeds 0, 1, 2 on Colab GPU will produce the final comparison against ABMIL (0.7281) and CLAM-SB (0.7388).
+* Replicated across seeds 0, 1, 2 on Colab GPU (2 Nov 2026): ABMIL 0.7281 ± 0.0132, CLAM-SB with the instance loss 0.7035 ± 0.0088, CLAM-SB without it 0.7271 ± 0.0223. The three are indistinguishable at n = 60.
 
 ### 4. Presentation Talking Points for Person 3
 * *"While ABMIL and CLAM treat patches as independent observations, TransMIL captures morphological context by allowing tokens to communicate via Transformer self-attention."*

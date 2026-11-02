@@ -1,8 +1,8 @@
 # Closing the audit: what one person actually has to do
 
-**Status: 7 of the 9 remediation items are finished and are sitting in a git bundle of eight commits.**
-Two items cannot be finished from inside the repository, because they need files that
-only exist on your Windows machine:
+**Status: all 9 remediation items are closed (2 Nov 2026).**
+P0-1 and P0-3 were finished by running the ablation on Colab rather than by finding lost
+files; the remaining historical text is kept below as the record of how.
 
 1. **P0-1** — the CLAM-SB / TransMIL weight files were never committed.
 2. **P0-3** — the mandatory instance-loss ablation has no committed artifacts, so the
@@ -12,9 +12,9 @@ Everything else is done. Total remaining work: **about two hours, one person, on
 
 | # | item | state | where |
 | --- | --- | --- | --- |
-| P0-1 | track the missing seed checkpoints | **you** — 30 min | Part B |
+| P0-1 | track the missing seed checkpoints | **done** — 12 `_best.pt` | Part B, plus the ablation run |
 | P0-2 | fix the sample app | **done** | commit `d004422`, `app/streamlit_app.py` |
-| P0-3 | run + commit the CLAM-SB ablation | **you** — 90 min | Part C |
+| P0-3 | run + commit the CLAM-SB ablation | **done** — 0.7035 / 0.7271 | `results/metrics/clam_sb/`, commit `eda3401` |
 | P1-4 | generated results table, no hand-typed numbers | **done** | `results/ALL_RESULTS.md`, `docs/RESULTS_LOG.md` |
 | P1-5 | lead with the paired table | **done** | `results/metrics/comparison/paired_*` |
 | P1-6 | quarantine the toy patch-CNN | **done** | `results/metrics/patch_cnn_demo/NOT_REPORTABLE.md` |
@@ -22,8 +22,13 @@ Everything else is done. Total remaining work: **about two hours, one person, on
 | P2-8 | document the data + `verify_data.py` | **done** | README §3-BIS, `scripts/verify_data.py` |
 | P2-9 | delete duplicate script, "54 tests", CI | **done** | `.github/workflows/tests.yml`, `scripts/README.md` |
 
-Do the parts in order. A → B → C → D → E. Do not skip Part D; it is ten minutes and it is
-what proves the job is finished.
+**Postscript (2 Nov 2026).** B and C are done. No CLAM-SB checkpoints existed anywhere, so
+the ablation was re-run on a Colab T4 instead of copied, which produced all six ablation
+checkpoints *and* the P0-3 artifacts in one go. Part D's verification block now passes
+except for its P0-1 line (`>= 9` is satisfied at 12). The only open item is the
+CHIEF/GigaPath weights — see [`REPRODUCIBILITY.md`](REPRODUCIBILITY.md). Parts B and C are
+kept below because they document the exact commands and the reasoning, which is what a
+future run needs.
 
 ---
 
