@@ -15,11 +15,11 @@ it, what to report, and what you are allowed to claim from which numbers.
 | --- | --- | --- | --- |
 | 1 | CLAM-SB implemented from scratch in PyTorch | `src/models/clam_sb.py` | ✅ |
 | 2 | Instance-level pseudo-labelling (top-`B` positive, bottom-`B` negative) | `CLAMSB._instance_clustering_loss` | ✅ |
-| 3 | Ablation: CLAM-SB with vs without instance loss | `src/train_clam_sb.py` → `ablation_clam_sb.md` | ✅ |
+| 3 | Ablation: CLAM-SB with vs without instance loss | `results/metrics/clam_sb/ablation_clam_sb.md` | ✅ run 2 Nov 2026 (0.7035 vs 0.7271) |
 | 4 | Comparison against ABMIL on the shared split | `src/compare_clam_abmil.py` → `comparison.md` | ✅ (needs Person 1 predictions) |
 | 5 | Attention heatmaps + attention distributions | `src/export_clam_attention.py`, `src/evaluate_clam_sb.py` | ✅ |
 | 6 | Quantitative localisation overlap score | `src/heatmaps.py::evaluate_localisation` → `localisation_scores.csv` | ✅ |
-| 7 | Report section: does instance loss help grading *and* sharpness? | `report/` | ⛔ blocked on real features |
+| 7 | Report section: does instance loss help grading *and* sharpness? | `report/person2_section.md` | ✅ §4–§6, from the rerun |
 
 ---
 
