@@ -107,16 +107,37 @@ def discover_runs(results: Path) -> Dict[str, Dict[int, Dict[str, Tuple[int, int
     and a one-level scan silently drops those arms from every table. Keys are
     paths relative to ``results/metrics`` with forward slashes, so a top-level run
     keeps its old name ("abmil") and a nested arm reads "clam_sb/with_instance".
+
+    Folders that are *not* trained runs are excluded: evaluation exports
+    (``eval_*``/``mock*``/``demo*``) and anything whose prediction files cover far
+    more slides than a test split.
     """
+    #: a *test-split* prediction file has 53-60 rows; anything much larger is an
+    #: evaluation export over all splits (`--split all`), which is not a run.
+    MAX_TEST_ROWS = 200
+
     runs: Dict[str, Dict[int, Dict[str, Tuple[int, int]]]] = {}
+    skipped: List[str] = []
     metrics_root = results / "metrics"
     candidates = sorted({p.parent for p in metrics_root.rglob("predictions_*_seed*.csv")})
     for run_dir in candidates:
         if not run_dir.is_dir():
             continue
+        key = str(run_dir.relative_to(metrics_root)).replace("\\", "/")
         seeds = load_run(run_dir)
-        if seeds:
-            runs[str(run_dir.relative_to(metrics_root)).replace("\\", "/")] = seeds
+        if not seeds:
+            continue
+        # Evaluation exports (`eval_*`, `eval_with_instance`, ...) are written by
+        # src.evaluate_clam_sb and contain one 'seed' covering every split. They are
+        # not trained runs: including them adds 420-slide rows and nonsense pairs
+        # such as "abmil -> clam_sb/eval_with_instance" to the tables.
+        largest = max(len(table) for table in seeds.values())
+        if any(part.lower().startswith(("eval", "mock", "demo")) for part in key.split("/")) or largest > MAX_TEST_ROWS:
+            skipped.append(f"{key} ({largest} slides)")
+            continue
+        runs[key] = seeds
+    if skipped:
+        print(f"skipped {len(skipped)} non-training folder(s): " + ", ".join(skipped), file=sys.stderr)
     return runs
 
 
