@@ -160,7 +160,22 @@ def collect_localisation(results: Path) -> List[Dict[str, Any]]:
 
 
 def collect_statistical(results: Path) -> Optional[Dict[str, Any]]:
-    return load_json(results / "metrics" / "statistical" / "statistical_baselines.json")
+    """Statistical baselines, from the flat file or the per-model folders.
+
+    ``src.statistical_models`` writes ``statistical/<model>/statistical_baselines.json``;
+    an older layout used a single flat ``statistical/statistical_baselines.json``. Both
+    are accepted, per-model folders preferred, so the section stops printing
+    'Not run yet' when the artifacts are in fact committed.
+    """
+    root = results / "metrics" / "statistical"
+    merged: Dict[str, Any] = {}
+    for path in sorted(root.glob("*/statistical_baselines.json")):
+        payload = load_json(path)
+        if isinstance(payload, dict):
+            merged[path.parent.name] = payload
+    if merged:
+        return merged
+    return load_json(root / "statistical_baselines.json")
 
 
 # --------------------------------------------------------------------------- #
@@ -349,16 +364,28 @@ def build_markdown(runs: Dict[str, Any], localisation: List[Dict[str, Any]], sta
     # ---- 5. statistical baselines -----------------------------------------
     lines += ["## 5. Statistical baselines (Person 4) on attention statistics", ""]
     if statistical:
-        for name in ("ordinal_logistic", "xgboost"):
-            payload = statistical.get(name, {})
-            if "qwk" in payload:
-                lines.append(
-                    f"- **{name}**: QWK {fmt(payload['qwk'])}, accuracy {fmt(payload.get('accuracy'))}, "
-                    f"macro F1 {fmt(payload.get('macro_f1'))}"
-                )
-            elif payload.get("skipped"):
-                lines.append(f"- {name}: skipped ({payload['skipped']})")
-        lines.append("")
+        # keys are model folders (clam_sb / abmil); each payload may hold a numeric
+        # `ordinal_logistic` QWK or a nested dict with the full metric set.
+        lines += ["| attention source | model | QWK | accuracy | macro F1 | n test |", "| --- | --- | --- | --- | --- | --- |"]
+        for model_name, payload in statistical.items():
+            for key in ("ordinal_logistic", "xgboost"):
+                entry = payload.get(key)
+                if isinstance(entry, (int, float)):
+                    lines.append(f"| {model_name} | {key} | {fmt(entry)} | – | – | {payload.get('n_test', '?')} |")
+                elif isinstance(entry, dict) and "qwk" in entry:
+                    lines.append(
+                        f"| {model_name} | {key} | {fmt(entry['qwk'])} | {fmt(entry.get('accuracy'))} | "
+                        f"{fmt(entry.get('macro_f1'))} | {payload.get('n_test', '?')} |"
+                    )
+                elif isinstance(entry, dict) and entry.get("skipped"):
+                    lines.append(f"| {model_name} | {key} | skipped ({entry['skipped']}) | – | – | – |")
+        lines += [
+            "",
+            "_These consume a MIL model's own attention statistics, so they are not independent "
+            "baselines: they measure how much of the signal is already in the aggregated feature "
+            "block. Read them next to the end-to-end rows in §1._",
+            "",
+        ]
     else:
         lines += ["_Not run yet: `python -m src.statistical_models --attention-csv <eval csv>`._", ""]
 

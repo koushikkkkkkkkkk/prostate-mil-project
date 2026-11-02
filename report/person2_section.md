@@ -233,6 +233,35 @@ Two consequences that must be in the limitations:
    proxy used here; it answers "does the instance loss concentrate attention?" not "does it
    land on tumour?".
 
+### 8.1 Does the instance loss sharpen attention? No — it diffuses it
+
+From `results/metrics/clam_sb/eval_{with,without}_instance/attention_clam_sb_seed0.csv`
+(seed 0, all 420 slides), summarised in `results/PERSON2_SUMMARY.md` §3:
+
+| Arm | attention entropy (nats) | normalised entropy | top-10 attention share |
+| --- | --- | --- | --- |
+| CLAM-SB + instance loss | 4.9212 | 0.7996 | 0.3438 |
+| CLAM-SB, no instance loss | 4.3021 | 0.6986 | 0.4368 |
+
+**The instance loss makes attention *less* concentrated, not more.** Entropy is higher
+(4.92 vs 4.30) and the top-10 share of attention is lower (0.34 vs 0.44). This is the
+opposite of the mechanism the CLAM paper proposes for its instance-level clustering term,
+and it is a genuine negative result about the loss on this cohort rather than a reporting
+artefact.
+
+Two readings, both worth stating in the viva:
+
+* **Optimisation, not mechanism.** The validation curves (§6) show the with-instance arm
+  under-fitting on this feature set. A model that has not separated the classes yet has no
+  reason to concentrate attention, so the diffusion may be a symptom of the under-fit
+  rather than a property of the loss.
+* **Only one seed is available for this comparison.** The attention exports come from the
+  seed-0 checkpoints; a per-seed spread is not reported, so treat the direction as
+  suggestive and not as an effect size.
+
+Either way, the claim "instance supervision sharpens attention" is **not supported** by
+these numbers and must not appear in the write-up.
+
 ## 9. Limitations
 
 * Research prototype; **not a clinical tool**. No external validation.

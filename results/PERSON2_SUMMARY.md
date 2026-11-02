@@ -57,7 +57,14 @@ Lower entropy / higher top-10 share = the model spreads attention over fewer pat
 
 ## 5. Statistical baselines (Person 4) on attention statistics
 
-_Not run yet: `python -m src.statistical_models --attention-csv <eval csv>`._
+| attention source | model | QWK | accuracy | macro F1 | n test |
+| --- | --- | --- | --- | --- | --- |
+| abmil | ordinal_logistic | 0.7255 | 0.2833 | 0.2224 | 60 |
+| abmil | xgboost | skipped (xgboost not installed) | – | – | – |
+| clam_sb | ordinal_logistic | 0.7399 | 0.3667 | 0.3255 | 60 |
+| clam_sb | xgboost | skipped (xgboost not installed) | – | – | – |
+
+_These consume a MIL model's own attention statistics, so they are not independent baselines: they measure how much of the signal is already in the aggregated feature block. Read them next to the end-to-end rows in §1._
 
 ## 6. Interpretation (fill in after reading the tables)
 
