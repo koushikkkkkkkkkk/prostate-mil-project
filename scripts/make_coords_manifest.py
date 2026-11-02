@@ -144,6 +144,7 @@ def build_manifest(
         writer.writerows(kept)
 
     summary = {
+        "rows": rows,
         "manifest": str(manifest),
         "features_root": str(features_root),
         "out": str(out),
@@ -179,9 +180,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--manifest", default="data/common_split.csv")
     parser.add_argument("--features-root", default="data/features")
     parser.add_argument("--out", default="data/common_split_with_coords.csv")
+    parser.add_argument("--report", default="results/metrics/coord_coverage.csv",
+                        help="per-slide coverage report ('' to skip)")
     parser.add_argument("--quiet", action="store_true")
     args = parser.parse_args(argv)
 
+    rows_for_report: List[Dict[str, str]] = []
     try:
         summary = build_manifest(
             manifest=args.manifest,
@@ -189,9 +193,37 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             out=args.out,
             verbose=not args.quiet,
         )
+        rows_for_report = summary.get("rows", [])
     except (FileNotFoundError, ValueError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
+
+    if args.report:
+        report = Path(args.report)
+        report.parent.mkdir(parents=True, exist_ok=True)
+        with report.open("w", newline="", encoding="utf-8") as handle:
+            import csv as _csv
+
+            writer = _csv.DictWriter(
+                handle, fieldnames=["image_id", "split", "data_provider", "isup_grade", "reason"]
+            )
+            writer.writeheader()
+            dropped = set(summary["missing_coords_ids"]) | set(summary["missing_file_ids"])
+            for row in rows_for_report:
+                if row["image_id"] in dropped:
+                    writer.writerow(
+                        {
+                            "image_id": row["image_id"],
+                            "split": row.get("split", ""),
+                            "data_provider": row.get("data_provider", ""),
+                            "isup_grade": row.get("isup_grade", ""),
+                            "reason": "bare tensor (features only)"
+                            if row["image_id"] in summary["missing_coords_ids"]
+                            else "feature file missing",
+                        }
+                    )
+        if not args.quiet:
+            print(f"  coverage report -> {report}")
 
     if summary["n_kept"] == 0:
         print("ERROR: no slide has patch coordinates -- nothing written that the exporter could use.", file=sys.stderr)

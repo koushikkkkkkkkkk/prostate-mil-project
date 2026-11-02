@@ -78,7 +78,7 @@ venv, mismatched torch/torchvision) and prints the exact command that fixes each
 python -m unittest discover -s tests -v
 ```
 
-Expect `Ran 21 tests ... OK`. If anything fails, stop and fix the environment
+Expect `Ran 54 tests ... OK`. If anything fails, stop and fix the environment
 before going further — everything downstream depends on these passing.
 
 ## 4. Run the full pipeline on synthetic data (~1 minute)
