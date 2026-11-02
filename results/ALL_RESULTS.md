@@ -9,16 +9,20 @@ Read the `n test` column: 60 slides for the ResNet50 cohort, 57 for CHIEF, 53 fo
 | run | model | in_dim | manifest | n test | seeds | QWK (mean ± sd) | accuracy | balanced acc. | macro F1 | weights in repo |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `abmil` | abmil | 1024 | common_split.csv | 60 | 3 | **0.7281 ± 0.0132** | 0.3889 ± 0.0255 | 0.3889 ± 0.0255 | 0.3272 ± 0.0295 | ✅ 3 |
-| `abmil_chief` | abmil | 768 | common_split_chief.csv | 57 | 3 | **0.9124 ± 0.0036** | 0.5789 ± 0.0175 | 0.5864 ± 0.0157 | 0.5661 ± 0.0097 | ❌ (not this run) |
-| `abmil_gigap` | abmil | 1536 | common_split_gigap.csv | 53 | 3 | **0.9172 ± 0.0169** | 0.6352 ± 0.0475 | 0.6285 ± 0.0467 | 0.6246 ± 0.0507 | ❌ (not this run) |
+| `abmil_chief` | abmil | 768 | common_split_chief.csv | 57 | 3 | **0.9124 ± 0.0036** | 0.5789 ± 0.0175 | 0.5864 ± 0.0157 | 0.5661 ± 0.0097 | ❌ none |
+| `abmil_gigap` | abmil | 1536 | common_split_gigap.csv | 53 | 3 | **0.9172 ± 0.0169** | 0.6352 ± 0.0475 | 0.6285 ± 0.0467 | 0.6246 ± 0.0507 | ❌ none |
+| `clam_sb/with_instance` | clam_sb | 1024 | common_split.csv | 60 | 3 | **0.7035 ± 0.0088** | 0.3833 ± 0.0289 | 0.3833 ± 0.0289 | 0.3142 ± 0.0284 | ✅ 3 |
+| `clam_sb/without_instance` | clam_sb | 1024 | common_split.csv | 60 | 3 | **0.7271 ± 0.0223** | 0.3944 ± 0.0255 | 0.3944 ± 0.0255 | 0.3386 ± 0.0343 | ✅ 3 |
 | `clam_sb_chief` | clam_sb | 768 | common_split_chief.csv | 57 | 3 | **0.9224 ± 0.0014** | 0.5965 ± 0.0000 | 0.6025 ± 0.0011 | 0.5895 ± 0.0019 | ❌ none |
-| `transmil` | transmil | 1024 | common_split.csv | 60 | 3 | **0.7446 ± 0.0364** | 0.4833 ± 0.0441 | 0.4833 ± 0.0441 | 0.4475 ± 0.0371 | ❌ none |
+| `transmil` | transmil | 1024 | common_split.csv | 60 | 3 | **0.7446 ± 0.0364** | 0.4833 ± 0.0441 | 0.4833 ± 0.0441 | 0.4475 ± 0.0371 | ✅ 3 |
 
 Per-seed QWK:
 
 - `abmil`: 0.7137, 0.7308, 0.7397
 - `abmil_chief`: 0.9163, 0.9119, 0.9092
 - `abmil_gigap`: 0.9364, 0.9047, 0.9104
+- `clam_sb/with_instance`: 0.7137, 0.6991, 0.6978
+- `clam_sb/without_instance`: 0.7023, 0.7336, 0.7454
 - `clam_sb_chief`: 0.9236, 0.9227, 0.9209
 - `transmil`: 0.7030, 0.7602, 0.7706
 
@@ -36,7 +40,9 @@ Restricted to the 50 test slides covered by every run, so each row is measured o
 | ABMIL | CHIEF (768-d) | 50 | 3 | **0.9182 ± 0.0043** | 0.5800 ± 0.0200 |
 | ABMIL | GigaPath (1536-d) | 50 | 3 | **0.9099 ± 0.0183** | 0.6133 ± 0.0503 |
 | TransMIL | ResNet50 (1024-d) | 50 | 3 | **0.7113 ± 0.0583** | 0.4733 ± 0.0577 |
+| CLAM-SB, no instance loss | ResNet50 (1024-d) | 50 | 3 | **0.7001 ± 0.0313** | 0.3733 ± 0.0306 |
 | ABMIL | ResNet50 (1024-d) | 50 | 3 | **0.6995 ± 0.0136** | 0.3667 ± 0.0306 |
+| CLAM-SB + instance loss | ResNet50 (1024-d) | 50 | 3 | **0.6680 ± 0.0110** | 0.3600 ± 0.0346 |
 
 ### `paired_stats.md`
 
@@ -50,6 +56,12 @@ Paired bootstrap CI on ΔQWK (2000 resamples) and the exact McNemar test on per-
 | abmil → abmil_gigap | 0 | 53 | 0.6999 | 0.9364 | +0.2365 | [+0.1086, +0.4117] | 0.0005 | 3/20 |
 | abmil → abmil_gigap | 1 | 53 | 0.7151 | 0.9047 | +0.1896 | [+0.0756, +0.3469] | 0.0266 | 5/16 |
 | abmil → abmil_gigap | 2 | 53 | 0.7251 | 0.9104 | +0.1852 | [+0.0648, +0.3561] | 0.0118 | 4/16 |
+| abmil → clam_sb/with_instance | 0 | 60 | 0.7137 | 0.7137 | +0.0000 | [-0.1149, +0.0990] | 0.6250 | 1/3 |
+| abmil → clam_sb/with_instance | 1 | 60 | 0.7308 | 0.6991 | -0.0317 | [-0.1062, +0.0280] | 0.6250 | 3/1 |
+| abmil → clam_sb/with_instance | 2 | 60 | 0.7397 | 0.6978 | -0.0419 | [-0.1219, +0.0259] | 1.0000 | 2/1 |
+| abmil → clam_sb/without_instance | 0 | 60 | 0.7137 | 0.7023 | -0.0114 | [-0.0753, +0.0387] | 0.6250 | 1/3 |
+| abmil → clam_sb/without_instance | 1 | 60 | 0.7308 | 0.7336 | +0.0029 | [-0.0257, +0.0326] | 1.0000 | 2/1 |
+| abmil → clam_sb/without_instance | 2 | 60 | 0.7397 | 0.7454 | +0.0057 | [-0.0099, +0.0255] | 1.0000 | 0/0 |
 | abmil → transmil | 0 | 60 | 0.7137 | 0.7030 | -0.0106 | [-0.1488, +0.1048] | 0.0768 | 4/12 |
 | abmil → transmil | 1 | 60 | 0.7308 | 0.7602 | +0.0294 | [-0.0632, +0.1218] | 0.0768 | 4/12 |
 | abmil → transmil | 2 | 60 | 0.7397 | 0.7706 | +0.0309 | [-0.1076, +0.1752] | 1.0000 | 8/9 |
@@ -59,13 +71,31 @@ Paired bootstrap CI on ΔQWK (2000 resamples) and the exact McNemar test on per-
 | abmil_chief → clam_sb_chief | 0 | 57 | 0.9163 | 0.9236 | +0.0073 | [-0.0060, +0.0230] | 0.6875 | 2/4 |
 | abmil_chief → clam_sb_chief | 1 | 57 | 0.9119 | 0.9227 | +0.0109 | [-0.0074, +0.0384] | 1.0000 | 2/3 |
 | abmil_chief → clam_sb_chief | 2 | 57 | 0.9092 | 0.9209 | +0.0117 | [-0.0150, +0.0436] | 1.0000 | 3/3 |
+| clam_sb/with_instance → clam_sb/without_instance | 0 | 60 | 0.7137 | 0.7023 | -0.0114 | [-0.1094, +0.0876] | 1.0000 | 4/4 |
+| clam_sb/with_instance → clam_sb/without_instance | 1 | 60 | 0.6991 | 0.7336 | +0.0345 | [-0.0327, +0.1091] | 1.0000 | 2/3 |
+| clam_sb/with_instance → clam_sb/without_instance | 2 | 60 | 0.6978 | 0.7454 | +0.0476 | [-0.0148, +0.1252] | 1.0000 | 1/2 |
+| clam_sb/with_instance → transmil | 0 | 60 | 0.7137 | 0.7030 | -0.0106 | [-0.1804, +0.1537] | 0.2101 | 5/11 |
+| clam_sb/with_instance → transmil | 1 | 60 | 0.6991 | 0.7602 | +0.0611 | [-0.0575, +0.1882] | 0.0309 | 4/14 |
+| clam_sb/with_instance → transmil | 2 | 60 | 0.6978 | 0.7706 | +0.0728 | [-0.0839, +0.2322] | 0.8036 | 7/9 |
+| clam_sb/without_instance → transmil | 0 | 60 | 0.7023 | 0.7030 | +0.0008 | [-0.1414, +0.1270] | 0.2379 | 6/12 |
+| clam_sb/without_instance → transmil | 1 | 60 | 0.7336 | 0.7602 | +0.0266 | [-0.0679, +0.1190] | 0.0225 | 2/11 |
+| clam_sb/without_instance → transmil | 2 | 60 | 0.7454 | 0.7706 | +0.0252 | [-0.1209, +0.1729] | 1.0000 | 8/9 |
 | abmil → clam_sb_chief | 0 | 57 | 0.7019 | 0.9236 | +0.2217 | [+0.1036, +0.3783] | 0.0005 | 1/15 |
 | abmil → clam_sb_chief | 1 | 57 | 0.7199 | 0.9227 | +0.2028 | [+0.0873, +0.3583] | 0.0023 | 2/15 |
 | abmil → clam_sb_chief | 2 | 57 | 0.7295 | 0.9209 | +0.1914 | [+0.0709, +0.3452] | 0.0192 | 4/15 |
 
 ## 3. Ablation (mandatory: CLAM-SB with vs without instance loss)
 
-_No `ablation_*.md` found. The mandatory CLAM-SB instance-loss ablation has no committed artifacts yet — run `python -m src.train_clam_sb --seeds 0 1 2` and commit `results/metrics/clam_sb/`._
+#### `results\metrics\clam_sb\ablation_clam_sb.md`
+
+# CLAM-SB instance-level supervision ablation
+
+Same features, same split, same seeds; only the instance clustering loss changes.
+
+| Setting | QWK (mean) | QWK (sd) | Accuracy | Balanced acc. | Macro F1 | Seeds |
+| --- | --- | --- | --- | --- | --- | --- |
+| CLAM-SB + instance loss | 0.7035 | 0.0088 | 0.3833 | 0.3833 | 0.3142 | 3 |
+| CLAM-SB, no instance loss | 0.7271 | 0.0223 | 0.3944 | 0.3944 | 0.3386 | 3 |
 
 ## 4. Statistical baselines (on attention statistics)
 

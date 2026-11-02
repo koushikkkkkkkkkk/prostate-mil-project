@@ -1,0 +1,110 @@
+{
+  "n": 420,
+  "qwk": 0.6794436906377205,
+  "accuracy": 0.430952380952381,
+  "balanced_accuracy": 0.430952380952381,
+  "macro_f1": 0.39676595760725575,
+  "weighted_f1": 0.3967659576072557,
+  "per_class": {
+    "0": {
+      "precision": 0.47058823529411764,
+      "recall": 0.9142857142857143,
+      "f1": 0.6213592233009708,
+      "support": 70
+    },
+    "1": {
+      "precision": 0.5945945945945946,
+      "recall": 0.3142857142857143,
+      "f1": 0.411214953271028,
+      "support": 70
+    },
+    "2": {
+      "precision": 0.30434782608695654,
+      "recall": 0.2,
+      "f1": 0.2413793103448276,
+      "support": 70
+    },
+    "3": {
+      "precision": 0.3389830508474576,
+      "recall": 0.2857142857142857,
+      "f1": 0.31007751937984496,
+      "support": 70
+    },
+    "4": {
+      "precision": 0.45161290322580644,
+      "recall": 0.2,
+      "f1": 0.27722772277227725,
+      "support": 70
+    },
+    "5": {
+      "precision": 0.42342342342342343,
+      "recall": 0.6714285714285714,
+      "f1": 0.5193370165745856,
+      "support": 70
+    }
+  },
+  "confusion_matrix": [
+    [
+      64,
+      0,
+      2,
+      1,
+      1,
+      2
+    ],
+    [
+      33,
+      22,
+      10,
+      4,
+      1,
+      0
+    ],
+    [
+      19,
+      8,
+      14,
+      18,
+      3,
+      8
+    ],
+    [
+      8,
+      3,
+      8,
+      20,
+      5,
+      26
+    ],
+    [
+      8,
+      4,
+      8,
+      8,
+      14,
+      28
+    ],
+    [
+      4,
+      0,
+      4,
+      8,
+      7,
+      47
+    ]
+  ],
+  "checkpoint": "/content/prostate-mil-project/results/metrics/clam_sb/without_instance/checkpoints/clam_sb_seed0_best.pt",
+  "tag": "clam_sb_seed0",
+  "split": "all",
+  "seed": 0,
+  "instance_loss_active": false,
+  "attention_entropy_mean": 4.302103560780995,
+  "normalised_entropy_mean": 0.6986380322452244,
+  "top10_attention_share_mean": 0.43678466349485373,
+  "qwk_bootstrap_95ci": {
+    "point": 0.6794436906377205,
+    "lo": 0.6169533460529503,
+    "hi": 0.7356936283216727,
+    "n_boot": 2000
+  }
+}

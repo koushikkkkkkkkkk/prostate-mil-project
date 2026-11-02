@@ -1,0 +1,110 @@
+{
+  "n": 420,
+  "qwk": 0.6240851630073188,
+  "accuracy": 0.3880952380952381,
+  "balanced_accuracy": 0.3880952380952381,
+  "macro_f1": 0.345240308767185,
+  "weighted_f1": 0.345240308767185,
+  "per_class": {
+    "0": {
+      "precision": 0.4666666666666667,
+      "recall": 0.8,
+      "f1": 0.5894736842105263,
+      "support": 70
+    },
+    "1": {
+      "precision": 0.42,
+      "recall": 0.3,
+      "f1": 0.35,
+      "support": 70
+    },
+    "2": {
+      "precision": 0.2826086956521739,
+      "recall": 0.18571428571428572,
+      "f1": 0.22413793103448276,
+      "support": 70
+    },
+    "3": {
+      "precision": 0.2727272727272727,
+      "recall": 0.17142857142857143,
+      "f1": 0.21052631578947367,
+      "support": 70
+    },
+    "4": {
+      "precision": 0.34615384615384615,
+      "recall": 0.12857142857142856,
+      "f1": 0.1875,
+      "support": 70
+    },
+    "5": {
+      "precision": 0.3880597014925373,
+      "recall": 0.7428571428571429,
+      "f1": 0.5098039215686274,
+      "support": 70
+    }
+  },
+  "confusion_matrix": [
+    [
+      56,
+      3,
+      3,
+      0,
+      5,
+      3
+    ],
+    [
+      31,
+      21,
+      10,
+      5,
+      0,
+      3
+    ],
+    [
+      19,
+      8,
+      13,
+      17,
+      2,
+      11
+    ],
+    [
+      5,
+      6,
+      8,
+      12,
+      6,
+      33
+    ],
+    [
+      5,
+      10,
+      8,
+      6,
+      9,
+      32
+    ],
+    [
+      4,
+      2,
+      4,
+      4,
+      4,
+      52
+    ]
+  ],
+  "checkpoint": "/content/prostate-mil-project/results/metrics/clam_sb/with_instance/checkpoints/clam_sb_seed0_best.pt",
+  "tag": "clam_sb_seed0",
+  "split": "all",
+  "seed": 0,
+  "instance_loss_active": true,
+  "attention_entropy_mean": 4.921188408317539,
+  "normalised_entropy_mean": 0.7996306830011882,
+  "top10_attention_share_mean": 0.3438451668513673,
+  "qwk_bootstrap_95ci": {
+    "point": 0.6240851630073188,
+    "lo": 0.5544899629358353,
+    "hi": 0.6854754675400352,
+    "n_boot": 2000
+  }
+}

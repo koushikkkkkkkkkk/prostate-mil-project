@@ -1,0 +1,111 @@
+{
+  "n": 60,
+  "qwk": 0.7136563876651982,
+  "accuracy": 0.4,
+  "balanced_accuracy": 0.4000000000000001,
+  "macro_f1": 0.335978835978836,
+  "weighted_f1": 0.335978835978836,
+  "per_class": {
+    "0": {
+      "precision": 0.5,
+      "recall": 0.9,
+      "f1": 0.6428571428571429,
+      "support": 10
+    },
+    "1": {
+      "precision": 0.5,
+      "recall": 0.4,
+      "f1": 0.4444444444444444,
+      "support": 10
+    },
+    "2": {
+      "precision": 0.5,
+      "recall": 0.2,
+      "f1": 0.2857142857142857,
+      "support": 10
+    },
+    "3": {
+      "precision": 0.25,
+      "recall": 0.1,
+      "f1": 0.14285714285714285,
+      "support": 10
+    },
+    "4": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 10
+    },
+    "5": {
+      "precision": 0.36363636363636365,
+      "recall": 0.8,
+      "f1": 0.5,
+      "support": 10
+    }
+  },
+  "confusion_matrix": [
+    [
+      9,
+      0,
+      0,
+      0,
+      1,
+      0
+    ],
+    [
+      5,
+      4,
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      3,
+      2,
+      2,
+      1,
+      0,
+      2
+    ],
+    [
+      0,
+      1,
+      1,
+      1,
+      3,
+      4
+    ],
+    [
+      0,
+      0,
+      0,
+      2,
+      0,
+      8
+    ],
+    [
+      1,
+      1,
+      0,
+      0,
+      0,
+      8
+    ]
+  ],
+  "model": "clam_sb",
+  "tag": "clam_sb_seed0",
+  "seed": 0,
+  "best_epoch": 35,
+  "best_val_qwk": 0.513157894736842,
+  "instance_loss_active": true,
+  "instance_loss_weight": 0.3,
+  "n_parameters": 796947,
+  "train_seconds": 198.1084496974945,
+  "qwk_bootstrap_95ci": {
+    "point": 0.7136563876651982,
+    "lo": 0.5448663643842763,
+    "hi": 0.8405816314101261,
+    "n_boot": 2000
+  }
+}

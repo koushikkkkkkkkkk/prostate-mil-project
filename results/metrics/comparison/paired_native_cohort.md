@@ -9,3 +9,5 @@ Read the `n slides` column: 60 for the ResNet50 cohort, 57 for CHIEF, 53 for Gig
 | ABMIL | CHIEF (768-d) | 57 | 3 | **0.9124 ± 0.0036** | 0.5789 ± 0.0175 |
 | TransMIL | ResNet50 (1024-d) | 60 | 3 | **0.7446 ± 0.0364** | 0.4833 ± 0.0441 |
 | ABMIL | ResNet50 (1024-d) | 60 | 3 | **0.7281 ± 0.0132** | 0.3889 ± 0.0255 |
+| CLAM-SB, no instance loss | ResNet50 (1024-d) | 60 | 3 | **0.7271 ± 0.0223** | 0.3944 ± 0.0255 |
+| CLAM-SB + instance loss | ResNet50 (1024-d) | 60 | 3 | **0.7035 ± 0.0088** | 0.3833 ± 0.0289 |
