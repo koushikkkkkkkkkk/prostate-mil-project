@@ -29,6 +29,10 @@ data/features/*
 *.ckpt
 *.onnx
 
+# Allow trained reportable model checkpoints (< 100MB) under results/metrics/
+!results/metrics/*.pt
+!results/metrics/**/*.pt
+
 # ==========================================
 # Python & Environment
 # ==========================================
